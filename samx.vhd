@@ -46,17 +46,50 @@
 -- GIME registers of interest
 -- $FF90 (76) Compatible Mode | MMU Enabled
 -- $FF91 (0) MMU Task
--- $FF98 VMODE (7543210) A/G | Invert Artifacts | Monochrome | 50/60Hz | lines per row [2..0]
+-- $FF98 VMODE (7543210) A/G | Invert Artifacts | Monochrome | H50 50/60Hz | lines per row [2..0]
+-- LPR 00x = one line per row
+--     010 = two lines per row
+--     011 = eight lines per row
+--     100 = nine lines per row
+--     101 = ten lines per row
+--     110 = eleven lines per row
+--     111 = one line per screen (infinite lines per row)
 -- $FF99 VRES (654321) lines per field [6..5] | horizontal res [4..2] | colour res [1..0]
--- $FF9A BRDER (543210) border colour
--- $FF9B (10) VBANK
+-- LPF 00 = 192 scan lines on screen
+--     01 = 200 scan lines on screen
+--     10 = undefined (zero/infinite)
+--     11 = 225 scan lines on screen
+-- HRES (graphics) 000 = 16 bytes per row
+--                 001 = 20 bytes per row
+--                 010 = 32 bytes per row
+--                 011 = 40 bytes per row
+--                 100 = 64 bytes per row
+--                 101 = 80 bytes per row
+--                 110 = 128 bytes per row
+--                 111 = 160 bytes per row
+-- HRES (text) 0x0 = 32 bytes per row
+--             0x1 = 40 bytes per row
+--             1x0 = 64 bytes per row
+--             1x1 = 80 bytes per row
+-- CRES (graphics) 00 = 2 colours (8 pixels per byte)
+--                 01 = 4 colours (4 pixels per byte)
+--                 10 = 16 colours (2 pixels per byte)
+--                 11 = undefines (should be 1 pixel per byte)
+-- CRES (text) x0 = no colour attributes
+--             x1 = colour attributes enabled
+-- $FF9A BRDER (543210) border colour (6 bit RGB) non-compatible mode only
+-- $FF9B (10) VBANK - not required
 -- $FF9C (3210) vertical scroll register
--- $FF9D vertical offset MSB (location * 2048)
+-- $FF9D vertical offset MSB (location * 2048) limits to lower 512KB
 -- $FF9E vertical offset LSB (location * 8)
--- $FF9F horizontal offset HVEN [7] | offset (location * 2) [6..0]
+-- $FF9F horizontal offset HVEN [7] | X offset (location * 2) [6..0]
+-- HVEN 0 = HRES used
+--      1 = 256 byte virtual screen width
+-- X applies only when HVEN = 1
 -- $FFA0-A7 MMU1 bank registers
 -- $FFA8-AF MMU2 bank registers
 -- $FFB0-BF palette registers (543210) high RGB [5..3] | low RGB [2..0] (note 2 bits per channel)
+-- note - expand to use full 8 bits to add extra bit to Red and Green
 -- $FFD8-D9 CPU clock rate D8 = slow, D9 = fast
 -- $FFDE-DF Memory Map type DE = mixed | DF = ram
 
@@ -194,8 +227,15 @@ entity samx is
 		     DA0 : in std_logic;  -- 10K pullup, probably not needed
 		     nHS : in std_logic;
 			  
-			  -- Palette Control
-			  PREN : out std_logic
+			  -- Video Control
+			  VC_EN : out std_logic; -- video compatible (1=std)
+			  PDEF : out std_logic_vector (127 downto 0); -- palette def
+			  CRES : out std_logic_vector (2 downto 0); -- bits per pixel
+			  LPR : out std_logic_vector (2 downto 0); -- lines per row
+			  FMT : out std_logic; -- video format
+			  BP : out std_logic; -- bitmap mode
+			  HRES : out std_logic_vector (2 downto 0); -- horizontal res
+			  BRDR : out std_logic_vector (7 downto 0) -- border colour
 	     );
 end;
 
@@ -210,8 +250,10 @@ architecture rtl of samx is
 	signal is_IO1 : boolean;
 	signal is_IO2 : boolean;
 	signal is_FF3x : boolean;
+	signal is_FF9x : boolean;
 	signal is_FFAx : boolean;
 	signal is_FFBx : boolean;
+	signal is_FFDx : boolean;
 	signal is_SAM_REG : boolean;
 	signal is_IRQ_VEC : boolean;
 
@@ -252,12 +294,18 @@ architecture rtl of samx is
 	--  1  1  1  0  1   1           B1-B5
 	--  1  1  1  1  1   1           None (double data rate dma mode)
 	
+	-- alternatively use the GIME style registers to define video behaviour and ignore
+	-- the V register values when compatibility mode is disabled
+	
 	signal V : std_logic_vector(2 downto 0) := (others => '0');
 
 	-- F: VDG address offset.  Extends the 7 bits of the original to 14
 	-- bits, allowing a base address anywhere in the 512K in multiples of
 	-- 32 bytes.
 	signal F : std_logic_vector(18 downto 5) := (others => '0');
+	signal FA : std_logic_vector(18 downto 3) := (others => '0');
+	signal VC : std_logic := '1';
+	signal MMU_EN : std_logic := '0';
 
 	-- R: CPU rate.
 	signal R : std_logic := '0';
@@ -268,7 +316,7 @@ architecture rtl of samx is
 	-- DAT registers
 
 	-- Page select.  Which of 32 × 16K sections of RAM is mapped into each
-	-- of 4 × 16K CPU address regions (× 2 TASKs).
+	-- of 8 × 8K CPU address regions (× 2 TASKs).
 	type page_map_array is array (0 to 15) of std_logic_vector(7 downto 0);
 	constant INIT_PAGE_MAP : page_map_array := (
 		"00000000", "00000001", "00000010", "00000011",
@@ -363,8 +411,10 @@ begin
 	is_IO1     <= is_FFxx and A(7 downto 4) = "0010";  -- FF2x ONLY
 	is_FF3x    <= is_FFxx and A(7 downto 4) = "0011";  -- FF3x ONLY
 	is_IO2     <= is_FFxx and A(7 downto 5) = "010";   -- FF4x and FF5x
-	is_FFAx    <= is_FFxx and A(7 downto 4) = "1000";  -- FFAx ONLY
-	is_FFBx   <= is_FFxx and A(7 downto 4) = "1001";  -- FFBx ONLY
+	is_FF9x    <= is_FFxx and A(7 downto 4) = "1001";  -- FF9x ONLY
+	is_FFAx    <= is_FFxx and A(7 downto 4) = "1010";  -- FFAx ONLY
+	is_FFBx    <= is_FFxx and A(7 downto 4) = "1011";  -- FFBx ONLY
+	is_FFDx    <= is_FFxx and A(7 downto 4) = "1101";  -- FFDx ONLY
 	is_SAM_REG <= is_FFxx and A(7 downto 5) = "110";   -- FFCx and FFDx
 	is_IRQ_VEC <= is_FFxx and A(7 downto 5) = "111";   -- FFEx and FFFx
 
@@ -379,8 +429,6 @@ begin
 	-- RAM
 	is_RAM  <= A(15) = '0' or (TY = '1' and not is_FFxx);
 	
-	PREN <= '1' when is_FFBx else '0';
-
 	S <= -- IO, SAM registers, IRQ vectors
 	     "100" when is_IO0 else
 	     "101" when is_IO1 else
@@ -413,7 +461,7 @@ begin
 			TY <= '0';
 			page_map <= INIT_PAGE_MAP;
 		elsif falling_edge(Q_i) and RnW = '0' then
-			if is_SAM_REG then
+			if is_SAM_REG and VC = '1' then
 				-- SAM registers
 				case A(4 downto 1) is
 					when "0000" => V(0) <= A(0);
@@ -434,11 +482,17 @@ begin
 					when "1111" => TY <= A(0);
 					when others => null;
 				end case;
+			elsif is_SAM_REG then
+				case A(4 downto 1) is
+					when "1100" => R <= A(0);
+					when "1101" => R <= A(1);
+					when others => null;
+				end case;
 			elsif is_FFAx then
 				-- Needs a rewrite to accomodate GIME style page map selection
 				-- DAT registers, VDG address extension - GIME uses FFA0-FFA7/FFA8-FFAF depending on TR
 				-- TR is indicated by repurposed page bit
-				case TASK & A(2 downto 0) is
+				case A(3 downto 0) is
 					when "0000" => page_map(0) <= D(7 downto 0);
 					when "0001" => page_map(1) <= D(7 downto 0);
 					when "0010" => page_map(2) <= D(7 downto 0);
@@ -455,6 +509,26 @@ begin
 					when "1101" => page_map(13) <= D(7 downto 0);
 					when "1110" => page_map(14) <= D(7 downto 0);
 					when "1111" => page_map(15) <= D(7 downto 0);
+					when others => null;
+				end case;
+			elsif is_FFBx then
+				case A(3 downto 0) is
+					when "0000" => PDEF(7 downto 0) <= D(7 downto 0);
+					when "0001" => PDEF(15 downto 8) <= D(7 downto 0);
+					when "0010" => PDEF(23 downto 16) <= D(7 downto 0);
+					when "0011" => PDEF(31 downto 24) <= D(7 downto 0);
+					when "0100" => PDEF(39 downto 32) <= D(7 downto 0);
+					when "0101" => PDEF(47 downto 40) <= D(7 downto 0);
+					when "0110" => PDEF(55 downto 48) <= D(7 downto 0);
+					when "0111" => PDEF(63 downto 56) <= D(7 downto 0);
+					when "1000" => PDEF(71 downto 64) <= D(7 downto 0);
+					when "1001" => PDEF(79 downto 72) <= D(7 downto 0);
+					when "1010" => PDEF(87 downto 80) <= D(7 downto 0);
+					when "1011" => PDEF(95 downto 88) <= D(7 downto 0);
+					when "1100" => PDEF(103 downto 96) <= D(7 downto 0);
+					when "1101" => PDEF(111 downto 104) <= D(7 downto 0);
+					when "1110" => PDEF(119 downto 112) <= D(7 downto 0);
+					when "1111" => PDEF(127 downto 120) <= D(7 downto 0);
 					when others => null;
 				end case;
 			elsif is_FF3x then

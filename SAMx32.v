@@ -36,10 +36,10 @@ module SAMx32(
 	wire VClk;
 	wire DA0;
 	wire RFormat;
-	wire PaletteRegEnable;
 	wire AnG;
 	wire CSS;
 	wire [2:0] GM;
+	wire [127:0] Palette;
 	
 	reg [7:0] VD;
 	
@@ -73,7 +73,7 @@ module SAMx32(
 		.nER (RSTn),
 		.DA0 (DA0),
 		.nHS (HSn),
-		.PREN (PaletteRegEnable)
+		.PDEF (Palette)
 	);
 	
 	assign CE1n = RAMCEn | ZI[20];

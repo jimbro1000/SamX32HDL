@@ -164,3 +164,4 @@ set_location_assignment PIN_79 -to CD[1]
 set_location_assignment PIN_80 -to CD[2]
 set_location_assignment PIN_81 -to CD[0]
 set_global_assignment -name SDC_FILE SAMx32.sdc
+set_global_assignment -name VHDL_FILE palette_array.vhd

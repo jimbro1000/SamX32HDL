@@ -10,6 +10,7 @@ module ProtoVDG(
 	Format,
 	GM,
 	Inv,
+	PaletteDef,
 	AlphaRow,
 	AlphaCode,
 	DA0,
@@ -30,6 +31,7 @@ module ProtoVDG(
 	input Format;
 	input [2:0] GM;
 	input Inv;
+	input [127:0] PaletteDef;
 	output [3:0] AlphaRow;
 	output [6:0] AlphaCode;
 	output DA0;
