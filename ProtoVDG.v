@@ -20,7 +20,7 @@ module ProtoVDG(
 	RGB,
 	VC_EN,
 	CRES,
-	LPR,
+	LPF,
 	BP,
 	HRES,
 	BRDR
@@ -40,7 +40,7 @@ module ProtoVDG(
 	input [127:0] PaletteDef;
 	input VC_EN;
 	input [2:0] CRES;
-	input [2:0] LPR;
+	input [2:0] LPF;
 	input BP;
 	input [2:0] HRES;
 	input [7:0] BRDR;
@@ -103,6 +103,35 @@ module ProtoVDG(
 							.FSn(FSn), 
 							.FrameFormat(OutputFormat)
 						);
+				
+	wire [6:0] BPR;
+	wire [8:0] LeftMargin;
+	wire [8:0] RightMargin;
+	wire [8:0] AllRows;
+	wire [8:0] TopBlank;
+	wire [8:0] TopMargin;
+	wire [8:0] BottomMargin;
+	wire [2:0] BPP;
+					
+	FormatProfiler FmtProfile (
+		.clk(Clk),
+		.format(useFormat),
+		.GM(useGM),
+		.AnG(useAlpha),
+		.VC_EN(VC_EN),
+		.BP(BP),
+		.HRES(HRES),
+		.CRES(CRES),
+		.LPF(LPF),
+		.BytesPerRow(BPR),
+		.LeftMargin(LeftMargin),
+		.RightMargin(RightMargin),
+		.AllRows(AllRows),
+		.TopBlank(TopBlank),
+		.TopMargin(TopMargin),
+		.BottomMargin(BottomMargin),
+		.BPP(BPP)
+	);
 	// Frame timing generator - orchestrate sync, data pre-load
 	FormatTiming	FmtTiming (
 							.Q(Q),

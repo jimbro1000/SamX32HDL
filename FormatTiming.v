@@ -24,6 +24,11 @@ module FormatTiming(
 	input FrameFormat,
 	input AnG,
 	input Clk,
+	input VC_EN,
+	input BP,
+	input [2:0] CRES,
+	input [2:0] LPR,
+	input [2:0] HRES,
 	output PixelClk,
 	output reg HSn,
 	output reg FSn,
@@ -33,7 +38,7 @@ module FormatTiming(
 	output [3:0] alphaRow,
 	output reg DA0
    );
-
+	
 	reg activeRow;
 	wire [9:0] frameTopRow;
 	wire [9:0] frameBottomRow;

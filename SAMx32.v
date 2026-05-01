@@ -42,7 +42,7 @@ module SAMx32(
 	wire VCE;         // Video Compatible Mode Enable
 	wire [127:0] Palette; // 16x8 palette table
 	wire [2:0] CRES;  // Bits per pixel (1/2/4/8)
-	wire [2:0] LPR;   // Lines per row
+	wire [2:0] LPF;   // Lines per row
 	wire BP;			   // Bitmap Mode (gated by VCE)
 	wire [2:0] HRES;  // Horizontal Resolution
 	wire [7:0] BRDR;  // Border Colour
@@ -82,7 +82,7 @@ module SAMx32(
 		.VC_EN (VCE),
 		.PDEF (Palette),
 		.CRES (CRES),
-		.LPR (LPR),
+		.LPR (LPF),
 		.FMT (RFormat),
 		.BP (BP),
 		.HRES (HRES),
@@ -113,7 +113,7 @@ module SAMx32(
 		.RGB (RGBout),
 		.VC_EN (VCE),
 		.CRES (CRES),
-		.LPR (LPR),
+		.LPF (LPF),
 		.BP (BP),
 		.HRES (HRES),
 		.BRDR (BRDR)

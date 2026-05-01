@@ -1,0 +1,146 @@
+module FormatProfiler (
+	input clk,
+	input format,
+	input [2:0] GM,
+	input AnG,
+	input VC_EN,
+	input BP,
+	input [2:0] HRES,
+	input [2:0] CRES,
+	input [2:0] LPF,
+	output reg [6:0] BytesPerRow,
+	output reg [9:0] LeftMargin,
+	output reg [9:0] RightMargin,
+	output reg [9:0] AllRows,
+	output reg [9:0] TopBlank,
+	output reg [9:0] TopMargin,
+	output reg [9:0] BottomMargin,
+	output reg [3:0] BPP
+);
+
+initial begin
+	// default to PAL alpha
+	BytesPerRow <= 7'd32;
+	BPP <= 4'd1;
+	LeftMargin <= 9'd28;
+	RightMargin <= 9'd223;
+	AllRows <= 9'd311;
+	TopBlank <= 9'd57;
+	TopMargin <= 9'd84;
+	BottomMargin <= 9'd276;
+end
+
+always @(negedge clk) begin
+	if (format == 1) begin
+		AllRows <= 9'd258;
+		TopBlank <= 9'd32;
+	end else begin
+		AllRows <= 9'd311;
+		TopBlank <= 9'd57;
+	end
+	if (VC_EN == 1) begin // compatibility mdoe
+		BytesPerRow <= 7'd32;
+		LeftMargin <= 9'd28;
+		RightMargin <= 9'd223;
+		if (format == 1) begin // ntsc
+			TopMargin <= 9'd45;
+			BottomMargin <= 9'd237;
+		end else begin // pal
+			TopMargin <= 9'd84;
+			BottomMargin <= 9'd276;
+		end
+	end else begin
+		if (format == 1) begin
+			case (LPF)
+				2'b00: begin
+					TopMargin <= 9'd45;
+					BottomMargin <= 9'd237;
+				end
+				2'b01: begin
+					TopMargin <= 9'd41;
+					BottomMargin <= 9'd241;
+				end
+				default: begin
+					TopMargin <= 9'd33;
+					BottomMargin <= 9'd258;
+				end
+			endcase
+		end else begin
+			case (LPF)
+				2'b00: begin
+					TopMargin <= 9'd84;
+					BottomMargin <= 9'd276;
+				end
+				2'b01: begin
+					TopMargin <= 9'd80;
+					BottomMargin <= 9'd280;
+				end
+				default: begin
+					TopMargin <= 9'd68;
+					BottomMargin <= 9'd293;
+				end
+			endcase
+		end
+		if (BP) begin //bitmap mode
+			case (CRES)
+				2'b00:
+					BPP <= 1;
+				2'b01:
+					BPP <= 2;
+				2'b10:
+					BPP <= 4;
+				2'b11:
+					BPP <= 8;
+			endcase
+			case (HRES) // can't handle 64-160 without higher video clock rate!
+				3'b000: begin // 16 bpr
+					BytesPerRow <= 4'd16;
+					LeftMargin <= 9'd28;
+					RightMargin <= 9'd223;
+					//PixelWidth <= 2; // 2 * BPP
+				end
+				3'b010: begin // 32 bpr
+					BytesPerRow <= 4'd32;
+					LeftMargin <= 9'd28;
+					RightMargin <= 9'd223;
+					//PixelWidth <= 1;
+				end
+				3'b001: begin // 20 bpr
+					BytesPerRow <= 4'd20;
+					LeftMargin <= 9'd20;
+					RightMargin <= 9'd231;
+					//PixelWidth <= 2;
+				end
+				3'b011: begin // 40 bpr
+					BytesPerRow <= 4'd40;
+					LeftMargin <= 9'd20;
+					RightMargin <= 9'd231;
+					//PixelWidth <= 1;
+				end
+				default: begin // default unsafe modes to basic
+					BytesPerRow <= 4'd32;
+					LeftMargin <= 9'd28;
+					RightMargin <= 9'd223;
+					//PixelWidth <= 1;
+				end
+			endcase
+		end else begin //text mode - can't do 64 or 80 column yet, requires double video clock rate!
+			BPP <= 1;
+			case ({HRES[2],HRES[0]})
+				2'b00: begin // 32 cols
+					BytesPerRow <= 4'd32;
+					LeftMargin <= 9'd28;
+					RightMargin <= 9'd223;
+				end
+				default: begin // 40 cols
+					BytesPerRow <= 4'd40;
+					LeftMargin <= 9'd20;
+					RightMargin <= 9'd231;
+				end
+			endcase
+			BPP <= 1;
+		end
+	end
+end
+
+endmodule
