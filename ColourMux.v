@@ -20,16 +20,17 @@
 //////////////////////////////////////////////////////////////////////////////////
 module ColourMux(
 	input clk,
-	input [3:0] Colour1,
+	input [3:0] Colour1, // alpha
 	input Sel1,
-	input [3:0] Colour2,
+	input [3:0] Colour2, // semi
 	input Sel2,
-	input [3:0] Colour3,
+	input [3:0] Colour3, // graphic
 	input backporch,
 	input viewportActive,
-	input [3:0] Colour4,
+	input [3:0] Colour4, // border
 	input VC,
 	input [127:0] PaletteDef,
+	input [7:0] Border,
 	output reg [11:0] RGB
 );
 
@@ -44,7 +45,7 @@ module ColourMux(
 	assign Colour = backporch ? 4'b1111 : viewportActive ? Sel1 ? Colour1 : Sel2 ? Colour2 : Colour3 : Colour4;
 
 	always @(clk) begin
-		if (!backporch & !Sel1 & !Sel2 & !VC) begin
+		if (!backporch & viewportActive & !Sel1 & !Sel2 & !VC) begin
 			case (Colour)
 				4'b0000:
 					RGB = {PaletteDef[7],PaletteDef[5],PaletteDef[2],1'b0,PaletteDef[6],PaletteDef[4],PaletteDef[1],1'b0,PaletteDef[3],PaletteDef[0],2'b00};
@@ -80,36 +81,39 @@ module ColourMux(
 					RGB = {PaletteDef[127],PaletteDef[125],PaletteDef[122],1'b0,PaletteDef[126],PaletteDef[124],PaletteDef[121],1'b0,PaletteDef[123],PaletteDef[120],2'b00};
 			endcase
 		end else begin
-			case (Colour)
-				4'b0000:
-					RGB = 12'b000000000000; // almost black
-				4'b0001:
-					RGB = 12'b001111110000; // green
-				4'b0010:
-					RGB = 12'b111111110000; // yellow
-				4'b0011:
-					RGB = 12'b001000101111; // blue
-				4'b0100:
-					RGB = 12'b111100000000; // red
-				4'b0101: 
-					RGB = 12'b111111111111; // white (buff)
-				4'b0110:
-					RGB = 12'b001111111100; // cyan
-				4'b0111:
-					RGB = 12'b111100111111; // magenta
-				4'b1000:
-					RGB = 12'b111111000000; // orange
-				4'b1001:
-					RGB = 12'b111111000100; // bright orange
-				4'b1010:
-					RGB = 12'b000001000000; // dark green
-				4'b1011:
-					RGB = 12'b010000100010; // dark red
-				4'b1110:
-					RGB = 12'b000000100000; // dark green border
-				default:
-					RGB = 12'b000000000000; // backporch black
-			endcase
+			if (!backporch & !viewportActive & !VC) begin // use border definition
+				RGB = {Border[7],Border[5],Border[2],1'b0,Border[6],Border[4],Border[1],1'b0,Border[3],Border[0],2'b00};
+			end else // use compatible palette
+				case (Colour)
+					4'b0000:
+						RGB = 12'b000000000000; // almost black
+					4'b0001:
+						RGB = 12'b001111110000; // green
+					4'b0010:
+						RGB = 12'b111111110000; // yellow
+					4'b0011:
+						RGB = 12'b001000101111; // blue
+					4'b0100:
+						RGB = 12'b111100000000; // red
+					4'b0101: 
+						RGB = 12'b111111111111; // white (buff)
+					4'b0110:
+						RGB = 12'b001111111100; // cyan
+					4'b0111:
+						RGB = 12'b111100111111; // magenta
+					4'b1000:
+						RGB = 12'b111111000000; // orange
+					4'b1001:
+						RGB = 12'b111111000100; // bright orange
+					4'b1010:
+						RGB = 12'b000001000000; // dark green
+					4'b1011:
+						RGB = 12'b010000100010; // dark red
+					4'b1110:
+						RGB = 12'b000000100000; // dark green border
+					default:
+						RGB = 12'b000000000000; // backporch black
+				endcase
 		end
 	end
 

@@ -28,20 +28,26 @@ module SAMx32(
 	output FSn
 );
 
-	wire [20:0] ZI;
-	wire RAS0;
-	wire RAMCEn;
+	wire [20:0] ZI;   // SRAM address bus (internal)
+	wire RAS0;	      // Ram access strobe (was row address select)
+	wire RAMCEn;	   // SRAM chip enable
 	wire GEn;
 	wire GDIR;
-	wire VClk;
-	wire DA0;
-	wire RFormat;
-	wire AnG;
-	wire CSS;
-	wire [2:0] GM;
-	wire [127:0] Palette;
+	wire VClk;			// Video clock
+	wire DA0;			// Video data access read
+	wire RFormat;     // Requested video format (redundant?)
+	wire AnG;         // Alpha/Graphic mode select
+	wire CSS;         // Colour set select
+	wire [2:0] GM;    // Graphic mode selector
+	wire VCE;         // Video Compatible Mode Enable
+	wire [127:0] Palette; // 16x8 palette table
+	wire [2:0] CRES;  // Bits per pixel (1/2/4/8)
+	wire [2:0] LPR;   // Lines per row
+	wire BP;			   // Bitmap Mode (gated by VCE)
+	wire [2:0] HRES;  // Horizontal Resolution
+	wire [7:0] BRDR;  // Border Colour
 	
-	reg [7:0] VD;
+	reg [7:0] VD;     // Video data buffer
 	
 	ControlSignalCapture shadowPIA (
 		.Clk (E),
@@ -73,9 +79,16 @@ module SAMx32(
 		.nER (RSTn),
 		.DA0 (DA0),
 		.nHS (HSn),
-		.PDEF (Palette)
+		.VC_EN (VCE),
+		.PDEF (Palette),
+		.CRES (CRES),
+		.LPR (LPR),
+		.FMT (RFormat),
+		.BP (BP),
+		.HRES (HRES),
+		.BRDR (BRDR)
 	);
-	
+			  
 	assign CE1n = RAMCEn | ZI[20];
 	assign CE2n = RAMCEn | ~ZI[20];
 	assign Z = ZI[19:0];
@@ -97,7 +110,12 @@ module SAMx32(
 		.FSn (FSn),
 		.HSn (HSn),
 		.OutputFormat (Format),
-		.RGB (RGBout)
+		.RGB (RGBout),
+		.VC_EN (VCE),
+		.CRES (CRES),
+		.LPR (LPR),
+		.BP (BP),
+		.HRES (HRES),
+		.BRDR (BRDR)
 	);
-	
 endmodule

@@ -17,7 +17,13 @@ module ProtoVDG(
 	FSn,
 	HSn,
 	OutputFormat,
-	RGB
+	RGB,
+	VC_EN,
+	CRES,
+	LPR,
+	BP,
+	HRES,
+	BRDR
 );
 
 	input Q;
@@ -32,6 +38,12 @@ module ProtoVDG(
 	input [2:0] GM;
 	input Inv;
 	input [127:0] PaletteDef;
+	input VC_EN;
+	input [2:0] CRES;
+	input [2:0] LPR;
+	input BP;
+	input [2:0] HRES;
+	input [7:0] BRDR;
 	output [3:0] AlphaRow;
 	output [6:0] AlphaCode;
 	output DA0;
@@ -183,11 +195,14 @@ module ProtoVDG(
 							.Colour1(SemiColour), 
                      .Colour2(AlphaColour[3:0]), 
                      .Colour3(GraphColour[3:0]), 
-							.Colour4(4'b0100),//BorderColour),
+							.Colour4(BorderColour),
                      .Sel1(Sel1), 
                      .Sel2(Sel2), 
+							.VC(VC_EN),
 							.backporch(blank),
 							.viewportActive(viewportActive),
+							.PaletteDef(PaletteDef),
+							.Border(BRDR),
                      .RGB(RGB)
 						);
 endmodule
