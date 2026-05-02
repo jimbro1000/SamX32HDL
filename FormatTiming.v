@@ -26,9 +26,14 @@ module FormatTiming(
 	input Clk,
 	input VC_EN,
 	input BP,
-	input [2:0] CRES,
-	input [2:0] LPR,
-	input [2:0] HRES,
+	input BytesPerRow,
+	input LeftBorderMargin,
+	input RightBorderMargin,
+	input AllRows,
+	input TopBlank,
+	input TopMargin,
+	input BottomMargin,
+	input BPP,
 	output PixelClk,
 	output reg HSn,
 	output reg FSn,
@@ -45,6 +50,8 @@ module FormatTiming(
 	wire [9:0] frameAllRows;
 	wire [9:0] frameVBlank;
 	wire [9:0] frameVSync;
+	wire [9:0] leftpreload;
+	wire [9:0] rightpreload;
 	wire slowMode;
 	reg u_da0;
 	reg hBlank;
@@ -98,9 +105,9 @@ module FormatTiming(
 				daCountEnable <= 1'b1;
 			if (activeRow && colCounter == rightpreload)
 				daCountEnable <= 1'b0;
-			if (activeRow && colCounter == leftcols)
+			if (activeRow && colCounter == LeftBorderMargin)
 				active <= 1'b1;
-			if (activeRow && colCounter == rightcols)
+			if (activeRow && colCounter == RightBorderMargin)
 				active <= 1'b0;
 		end
 
@@ -132,29 +139,31 @@ module FormatTiming(
 	parameter rightMargin = 9'd223; // suggested 8 cycles of front porch //225
 	parameter allcols = 9'd227; // 64us duration (63.55)
 	// vertical
-	parameter activerows = 9'd192;
+//	parameter activerows = 9'd192;
 	// pal
 	parameter vsync = 9'd7;
-	parameter topBlank = 9'd57; //pal
-	parameter toprow = 9'd84;
-	parameter bottomrow = 9'd276; //pal
-	parameter allrows = 9'd311;// pal
+//	parameter topBlank = 9'd57; //pal
+//	parameter toprow = 9'd84;
+//	parameter bottomrow = 9'd276; //pal
+//	parameter allrows = 9'd311;// pal
 	// best = 7, 20, 95, 287, 311
 	// target = 32, 45, 95, 287, 311 
 	
 	// ntsc
-	parameter vsync2 = 9'd7;
-	parameter topBlank2 = 9'd32; //ntsc
-	parameter toprow2 = 9'd45;
-	parameter bottomrow2 = 9'd237; //ntsc
-	parameter allrows2 = 9'd258;// ntsc
+//	parameter vsync2 = 9'd7;
+//	parameter topBlank2 = 9'd32; //ntsc
+//	parameter toprow2 = 9'd45;
+//	parameter bottomrow2 = 9'd237; //ntsc
+//	parameter allrows2 = 9'd258;// ntsc
 
 	//parameter activecols = 128;// * 2 = 256
 	//to achieve 40 data access cycles per line the preload must start at 66-69 clock cycles
-	parameter leftcols = 9'd64; //
-	parameter rightcols = 9'd192; //leftcols + activecols + 1;
-	parameter leftpreload = 9'd63; //leftcols - 4;
-	parameter rightpreload = 9'd217; //rightcols - 4;
+//	parameter leftcols = 9'd64; //
+//	parameter rightcols = 9'd192; //leftcols + activecols + 1;
+//	parameter leftpreload = 9'd63; //leftcols - 4;
+//	parameter rightpreload = 9'd217; //rightcols - 4;
+	assign leftpreload = LeftBorderMargin - 9'd4;
+	assign rightpreload = RightBorderMargin - 9'd4;
 
 	initial begin
 	   u_da0 = 1'b1;
@@ -174,12 +183,12 @@ module FormatTiming(
 	assign BackPorch = hBlank || vBlank;
 	
 	// general signals
-	assign slowMode = AnG && (GMode == 3'b000);
+	assign slowMode = VC_EN && AnG && (GMode == 3'b000);
 	assign PixelClk = slowMode ? Clk3 : Clk;
-	assign frameTopRow = FrameFormat ? toprow2 : toprow; // FrameFormat 0=PAL/1=NTSC
-	assign frameBottomRow = FrameFormat ? bottomrow2 : bottomrow;
-	assign frameAllRows = FrameFormat ? allrows2 : allrows;
-	assign frameVBlank = FrameFormat ? topBlank2 : topBlank;
-	assign frameVSync = FrameFormat ? vsync2 : vsync;
+	assign frameTopRow = TopMargin; //FrameFormat ? toprow2 : toprow; // FrameFormat 0=PAL/1=NTSC
+	assign frameBottomRow = BottomMargin; //FrameFormat ? bottomrow2 : bottomrow;
+	assign frameAllRows = AllRows; //FrameFormat ? allrows2 : allrows;
+	assign frameVBlank = TopBlank; //FrameFormat ? topBlank2 : topBlank;
+	assign frameVSync = vsync; //FrameFormat ? vsync2 : vsync;
 
 endmodule
