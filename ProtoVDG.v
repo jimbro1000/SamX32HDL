@@ -23,7 +23,8 @@ module ProtoVDG(
 	LPF,
 	BP,
 	HRES,
-	BRDR
+	BRDR,
+	VR
 );
 
 	input Q;
@@ -51,6 +52,7 @@ module ProtoVDG(
 	output HSn;
 	output OutputFormat;
 	output [11:0] RGB;
+	output VR;
 
 	wire Divider;
 	wire Load;
@@ -130,7 +132,8 @@ module ProtoVDG(
 							.TopBlank(TopBlank),
 							.TopMargin(TopMargin),
 							.BottomMargin(BottomMargin),
-							.BPP(BPP)
+							.BPP(BPP),
+							.fast_video(VR)
 	);
 	// Frame timing generator - orchestrate sync, data pre-load
 	FormatTiming	FmtTiming (

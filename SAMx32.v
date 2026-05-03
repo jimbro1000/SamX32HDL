@@ -46,6 +46,7 @@ module SAMx32(
 	wire BP;			   // Bitmap Mode (gated by VCE)
 	wire [2:0] HRES;  // Horizontal Resolution
 	wire [7:0] BRDR;  // Border Colour
+	wire VR;				// Request fast video
 	
 	reg [7:0] VD;     // Video data buffer
 	
@@ -86,7 +87,8 @@ module SAMx32(
 		.FMT (RFormat),
 		.BP (BP),
 		.HRES (HRES),
-		.BRDR (BRDR)
+		.BRDR (BRDR),
+		.VR(VR)
 	);
 			  
 	assign CE1n = RAMCEn | ZI[20];
@@ -116,6 +118,7 @@ module SAMx32(
 		.LPF (LPF),
 		.BP (BP),
 		.HRES (HRES),
-		.BRDR (BRDR)
+		.BRDR (BRDR),
+		.VR(VR)
 	);
 endmodule

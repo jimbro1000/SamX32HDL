@@ -230,12 +230,14 @@ entity samx is
 			  -- Video Control
 			  VC_EN : out std_logic; -- video compatible (1=std)
 			  PDEF : out std_logic_vector (127 downto 0); -- palette def
-			  CRES : out std_logic_vector (2 downto 0); -- bits per pixel
+			  CRES : out std_logic_vector (1 downto 0); -- bits per pixel
 			  LPR : out std_logic_vector (2 downto 0); -- lines per row
+			  LPF : out std_logic_vector (1 downto 0); -- lines per field
 			  FMT : out std_logic; -- video format
 			  BP : out std_logic; -- bitmap mode
 			  HRES : out std_logic_vector (2 downto 0); -- horizontal res
-			  BRDR : out std_logic_vector (7 downto 0) -- border colour
+			  BRDR : out std_logic_vector (7 downto 0); -- border colour
+			  VR : in std_logic -- video speed request
 	     );
 end;
 
@@ -306,6 +308,7 @@ architecture rtl of samx is
 	signal FA : std_logic_vector(18 downto 3) := (others => '0');
 	signal VC : std_logic := '1';
 	signal MMU_EN : std_logic := '0';
+	signal INIT0 : std_logic_vector(7 downto 0) := "11000000";
 
 	-- R: CPU rate.
 	signal R : std_logic := '0';
@@ -344,6 +347,7 @@ architecture rtl of samx is
 	signal BOSC : std_logic;
 	signal T : time_ref := T7;
 	signal fast_cycle : boolean := false;
+	signal fast_video : boolean := false;
 
 	-- Internal port signals
 	signal E_i : std_logic := '0';
@@ -353,7 +357,8 @@ architecture rtl of samx is
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Address multiplexer
 
-	signal z_cpu : boolean := true;
+	signal z_cpu : boolean := false;
+	signal z_video : boolean := true;
 
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Reset
@@ -374,7 +379,16 @@ architecture rtl of samx is
 
 	-- Video address counter
 	signal B : std_logic_vector(18 downto 1) := (others => '0');
-
+	signal Y : std_logic_vector(15 downto 0) := (others => '0');
+	signal X : std_logic_vector(6 downto 0) := (others => '0');
+	signal VMODE : std_logic_vector(7 downto 0) := (others => '0');
+	signal VRES : std_logic_vector(6 downto 0) := (others => '0');
+	signal HOR : std_logic_vector(7 downto 0) := (others => '0');
+	signal HVEN : std_logic := '0';
+	signal MOCH : std_logic := '0';
+	signal H50 : std_logic := '0';
+	signal BPI : std_logic := '0';
+	
 	-- Synchronisation
 	signal vdg_da0_window : boolean;
 	signal vdg_start : boolean;
@@ -445,12 +459,31 @@ begin
 	     -- RAM
 	     "000";
 
+	-- ADVANCED SAM FEATURES (based on CoCo3 GIME)
+		  
+	VC <= INIT0(7);
+	MMU_EN <= INIT0(6);
+		  
+	FMT <= not H50;
+	BP <= VMODE(7);
+	BPI <= VMODE(5);
+	MOCH <= VMODE(4);
+	H50 <= VMODE(3);
+	LPR <= VMODE(2 downto 0);
+	
+	LPF <= VRES(6 downto 5);
+	HRES <= VRES(4 downto 2);
+	CRES <= VRES(1 downto 0);
+	
+	HVEN <= HOR(7);
+	X <= HOR(6 downto 0);
+
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Registers
 
 	-- Latching register writes on the falling edge of Q makes other timing a lot simpler.  In particular, when to open the CPU data gate.
 
-	process (IER, Q_i, RnW, is_FFxx, is_FF3x, is_SAM_REG)
+	process (IER, Q_i, RnW, is_FFxx, is_FF3x, is_FF9x, is_SAM_REG)
 	begin
 		if IER = '1' then
 			V <= (others => '0');
@@ -539,6 +572,18 @@ begin
 						COMMON <= D(1 downto 0);
 					when others => null;
 				end case;
+			elsif is_FF9x then
+				case A(3 downto 0) is
+					when "0000" => INIT0 <= D(7 downto 0);
+					when "0001" => TASK <= D(0);
+					when "1000" => VMODE <= D(7 downto 0);
+					when "1001" => VRES <= D(6 downto 0);
+					when "1010" => BRDR <= D(7 downto 0);
+					when "1101" => Y(15 downto 8) <= D(7 downto 0);
+					when "1110" => Y(7 downto 0) <= D(7 downto 0);
+					when "1111" => HOR <= D(7 downto 0);
+					when others => null;
+				end case;
 			end if;
 		end if;
 	end process;
@@ -613,18 +658,12 @@ begin
 						else
 							Q_i <= not IER;
 						end if;
-					else
-						z_cpu <= false;
 					end if;
 
 				when T0 =>
 					T <= T1;
 
 					IR <= '0';
-
-					if fast_cycle then
-						z_cpu <= true;
-					end if;
 
 				when T1 =>
 					T <= T2;
@@ -636,7 +675,10 @@ begin
 				when T2 =>
 					T <= T3;
 
-					z_cpu <= true;
+					if fast_cycle then
+						z_cpu <= true;
+					end if;
+					z_video <= false;
 
 					if not fast_cycle then
 						Q_i <= not IER;
@@ -657,6 +699,10 @@ begin
 
 					if fast_cycle then
 						E_i <= '0';
+					end if;
+					z_cpu <= false;
+					if fast_video then
+						z_video <= true;
 					end if;
 
 				when T6 =>
@@ -693,6 +739,15 @@ begin
 					if not fast_cycle then
 						Q_i <= '0';
 					end if;
+					
+					if VR = '1' then
+						fast_video <= true;
+					else
+						fast_video <= false;
+					end if;
+
+					z_cpu <= true;
+					z_video <= false;
 
 				when TB =>
 					T <= TC;
@@ -715,14 +770,13 @@ begin
 						E_i <= '0';
 					end if;
 
+					z_cpu <= false;
+					z_video <= true;
+
 				when TE =>
 					T <= TF;
 
 					E_i <= '0';
-
-					if fast_cycle then
-						z_cpu <= false;
-					end if;
 
 			end case;
 		end if;
@@ -731,7 +785,7 @@ begin
 
 	-- differentiate video data from cpu data
 	-- latch on each cycle where z addressing is dedicated to VDG
-	VD <= D when z_cpu = false; 
+	VD <= D when z_video = true; 
 
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Address multiplexer
@@ -739,17 +793,20 @@ begin
 	mpu_page <= to_integer(unsigned(TASK & A(15 downto 14)));
 
 	Z_i(18 downto 14) <=
-		"11111" when z_cpu and is_COMMON else
-		-- CPU
-		page_map(mpu_page)(4 downto 0) when z_cpu else
 		-- VDG
-		B(18 downto 14);
+		B(18 downto 14) when z_video else
+		-- CPU
+		page_map(mpu_page)(4 downto 0) when z_cpu and is_COMMON = false else
+		-- DEFAULT
+		"11111";
 
 	Z_i(13 downto 0) <=
 		-- CPU
 		A(13 downto 0) when z_cpu else
 		-- VDG
-		B(13 downto 1) & DA0;
+		B(13 downto 1) & DA0 when z_video else
+		-- DEFAULT
+		"11111111111111";
 
 	Z <= Z_i;
 	nZ0 <= not Z_i(0);
@@ -775,7 +832,9 @@ begin
 			 rst => '0'
 		 );
 
-	VClk <= not VClk_BOSC_div4_q;
+	-- Run pixel clock at full oscillator speed, up to VDG to divide this down, not SAM
+	-- suspend for reset only
+	VClk <= '0' when IER = '0' else BOSC;
 
 	-- Note: IR defaults to '1' and is permanently set to '0' halfway
 	-- through a machine cycle.

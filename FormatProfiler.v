@@ -15,7 +15,8 @@ module FormatProfiler (
 	output reg [9:0] TopBlank,
 	output reg [9:0] TopMargin,
 	output reg [9:0] BottomMargin,
-	output reg [3:0] BPP
+	output reg [3:0] BPP,
+	output reg fast_video
 );
 
 initial begin
@@ -28,6 +29,7 @@ initial begin
 	TopBlank <= 9'd57;
 	TopMargin <= 9'd84;
 	BottomMargin <= 9'd276;
+	fast_video <= 1'b0;
 end
 
 always @(negedge clk) begin
@@ -38,7 +40,7 @@ always @(negedge clk) begin
 		AllRows <= 9'd311;
 		TopBlank <= 9'd57;
 	end
-	if (VC_EN == 1) begin // compatibility mdoe
+	if (VC_EN == 1) begin // compatibility mode
 		BytesPerRow <= 7'd32;
 		LeftMargin <= 9'd28;
 		RightMargin <= 9'd223;
@@ -50,7 +52,7 @@ always @(negedge clk) begin
 			BottomMargin <= 9'd276;
 		end
 	end else begin
-		if (format == 1) begin
+		if (format == 1) begin // ntsc
 			case (LPF)
 				2'b00: begin
 					TopMargin <= 9'd45;
@@ -97,25 +99,41 @@ always @(negedge clk) begin
 					BytesPerRow <= 4'd16;
 					LeftMargin <= 9'd28;
 					RightMargin <= 9'd223;
+					fast_video <= 1'b0;
 					//PixelWidth <= 2; // 2 * BPP
 				end
 				3'b010: begin // 32 bpr
 					BytesPerRow <= 4'd32;
 					LeftMargin <= 9'd28;
 					RightMargin <= 9'd223;
+					fast_video <= 1'b0;
 					//PixelWidth <= 1;
 				end
 				3'b001: begin // 20 bpr
 					BytesPerRow <= 4'd20;
 					LeftMargin <= 9'd20;
 					RightMargin <= 9'd231;
+					fast_video <= 1'b0;
 					//PixelWidth <= 2;
 				end
 				3'b011: begin // 40 bpr
 					BytesPerRow <= 4'd40;
 					LeftMargin <= 9'd20;
 					RightMargin <= 9'd231;
+					fast_video <= 1'b0;
 					//PixelWidth <= 1;
+				end
+				3'b100: begin // 64 bpr
+					BytesPerRow <= 4'd64;
+					LeftMargin <= 9'd28;
+					RightMargin <= 9'd223;
+					fast_video <= 1'b1;
+				end
+				3'b101: begin // 80 bpr
+					BytesPerRow <= 4'd80;
+					LeftMargin <= 9'd20;
+					RightMargin <= 9'd231;
+					fast_video <= 1'b1;
 				end
 				default: begin // default unsafe modes to basic
 					BytesPerRow <= 4'd32;
@@ -124,18 +142,32 @@ always @(negedge clk) begin
 					//PixelWidth <= 1;
 				end
 			endcase
-		end else begin //text mode - can't do 64 or 80 column yet, requires double video clock rate!
+		end else begin //text mode
 			BPP <= 1;
 			case ({HRES[2],HRES[0]})
 				2'b00: begin // 32 cols
 					BytesPerRow <= 4'd32;
 					LeftMargin <= 9'd28;
 					RightMargin <= 9'd223;
+					fast_video <= 1'b0;
 				end
-				default: begin // 40 cols
+				2'b01: begin // 40 cols
 					BytesPerRow <= 4'd40;
 					LeftMargin <= 9'd20;
 					RightMargin <= 9'd231;
+					fast_video <= 1'b0;
+				end
+				2'b00: begin // 64 cols
+					BytesPerRow <= 4'd64;
+					LeftMargin <= 9'd28;
+					RightMargin <= 9'd223;
+					fast_video <= 1'b1;
+				end
+				default: begin
+					BytesPerRow <= 4'd80;
+					LeftMargin <= 9'd20;
+					RightMargin <= 9'd231;
+					fast_video <= 1'b1;
 				end
 			endcase
 			BPP <= 1;
