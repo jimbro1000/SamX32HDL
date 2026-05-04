@@ -66,7 +66,7 @@ module FormatTiming(
 	// enable data address count - stops at end of line, starts 2 clocks before first display byte on each line
 	reg daCountEnable;
 	// how many clock counts needed to trigger a change to da
-	reg [6:0] daResetLimit;
+	reg [7:0] daResetLimit;
 	reg [3:0] alphaRowCounter;
 	
 	always @(negedge Clk) begin
@@ -151,89 +151,89 @@ module FormatTiming(
 	// parameter activecols = 128;// * 2 = 256
 	// to achieve 40 data access cycles per line the preload must start at 66-69 clock cycles
 
-	reg [3:0] preloadOffset = 4'd16;
+	reg [4:0] preloadOffset = 5'd16;
 	assign leftpreload = LeftBorderMargin - preloadOffset;
 	assign rightpreload = RightBorderMargin - preloadOffset;
 
 	always @(BPP) begin // very speculatively split into logic on bits per pixel but likely unnecessary...
 		if (BPP == 3'd1) begin
 			case (BytesPerRow)
-				6'd80 : begin
-					preloadOffset <= 4'd8; // 640 x 1 pixels wide
-					daResetLimit <= 7'd8;
+				7'd80 : begin
+					preloadOffset <= 5'd8; // 640 x 1 pixels wide
+					daResetLimit <= 8'd8;
 				end
-				6'd64 : begin
-					preloadOffset <= 4'd8; // 512 x 1 pixels wide
-					daResetLimit <= 7'd8;
+				7'd64 : begin
+					preloadOffset <= 5'd8; // 512 x 1 pixels wide
+					daResetLimit <= 8'd8;
 				end
-				6'd40 : begin
-					preloadOffset <= 4'd16; // 320 x 1 pixels wide
-					daResetLimit <= 7'd16;
+				7'd40 : begin
+					preloadOffset <= 5'd16; // 320 x 1 pixels wide
+					daResetLimit <= 8'd16;
 				end
 				default: begin
-					preloadOffset <= 4'd16; // 256 x 1 pixels wide
-					daResetLimit <= 7'd16;
+					preloadOffset <= 5'd16; // 256 x 1 pixels wide
+					daResetLimit <= 8'd16;
 				end
 			endcase
 		end else if (BPP == 3'd2) begin
 			case (BytesPerRow)
-				6'd80 : begin
-					preloadOffset <= 4'd8; // 320 x 1 pixels wide
-					daResetLimit <= 7'd16;
+				7'd80 : begin
+					preloadOffset <= 5'd8; // 320 x 1 pixels wide
+					daResetLimit <= 8'd16;
 				end
-				6'd64 : begin
-					preloadOffset <= 4'd8; // 256 x 1 pixels wide
-					daResetLimit <= 7'd16;
+				7'd64 : begin
+					preloadOffset <= 5'd8; // 256 x 1 pixels wide
+					daResetLimit <= 8'd16;
 				end
-				6'd40 : begin
-					preloadOffset <= 4'd16; // 160 x 2 pixels wide
-					daResetLimit <= 7'd32;
+				7'd40 : begin
+					preloadOffset <= 5'd16; // 160 x 2 pixels wide
+					daResetLimit <= 8'd32;
 				end
 				default: begin
-					preloadOffset <= 4'd16; // 128 x 2 pixels wide
-					daResetLimit <= 7'd32;
+					preloadOffset <= 5'd16; // 128 x 2 pixels wide
+					daResetLimit <= 8'd32;
 				end
 			endcase
 		end else if (BPP == 3'd4) begin
 			case (BytesPerRow)
-				6'd80 : begin
-					preloadOffset <= 4'd8; // 160 x 2 pixels wide
-					daResetLimit <= 7'd32;
+				7'd80 : begin
+					preloadOffset <= 5'd8; // 160 x 2 pixels wide
+					daResetLimit <= 8'd32;
 				end
-				6'd64 : begin
-					preloadOffset <= 4'd8; // 128 x 2 pixels wide
-					daResetLimit <= 7'd32;
+				7'd64 : begin
+					preloadOffset <= 5'd8; // 128 x 2 pixels wide
+					daResetLimit <= 8'd32;
 				end
-				6'd40 : begin
-					preloadOffset <= 4'd16; // 80 x 4 pixels wide
-					daResetLimit <= 7'd64;
+				7'd40 : begin
+					preloadOffset <= 5'd16; // 80 x 4 pixels wide
+					daResetLimit <= 8'd64;
 				end
 				default: begin
-					preloadOffset <= 4'd16; // 64 x 4 pixels wide
-					daResetLimit <= 7'd64;
+					preloadOffset <= 5'd16; // 64 x 4 pixels wide
+					daResetLimit <= 8'd64;
 				end
 			endcase
 		end else begin // 8BPP
 			case (BytesPerRow)
-				6'd0 : begin
-					preloadOffset <= 4'd1; // actually 256 byte width
-					daResetLimit <= 7'd1;
+				7'd0 : begin
+					preloadOffset <= 5'd1; // actually 256 byte width
+					daResetLimit <= 8'd1;
 				end
-				6'd80 : begin
-					preloadOffset <= 4'd8; // 40 x 8 pixels wide
-					daResetLimit <= 7'd64;
+				7'd80 : begin
+					preloadOffset <= 5'd8; // 40 x 8 pixels wide
+					daResetLimit <= 8'd64;
 				end
-				6'd64 : begin
-					preloadOffset <= 4'd8; // 32 x 8 pixels wide
-					daResetLimit <= 7'd64;
+				7'd64 : begin
+					preloadOffset <= 5'd8; // 32 x 8 pixels wide
+					daResetLimit <= 8'd64;
 				end
-				6'd40 : begin
-					preloadOffset <= 4'd16; // 20 x 16 pixels wide
-					daResetLimit <= 7'd128;
+				7'd40 : begin
+					preloadOffset <= 5'd16; // 20 x 16 pixels wide
+					daResetLimit <= 8'd128;
 				end
 				default: begin
-					preloadOffset <= 4'd16; // 16 x 16 pixels wide
-					daResetLimit <= 7'd128;
+					preloadOffset <= 5'd16; // 16 x 16 pixels wide
+					daResetLimit <= 8'd128;
 				end
 			endcase
 		end

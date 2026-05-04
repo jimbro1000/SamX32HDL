@@ -478,6 +478,8 @@ begin
 	
 	HVEN <= HOR(7);
 	X <= HOR(6 downto 0);
+	
+	VC_EN <= VC;
 
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Registers
@@ -794,23 +796,25 @@ begin
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Address multiplexer
 
-	mpu_page <= to_integer(unsigned(TASK & A(15 downto 14)));
+	mpu_page <= to_integer(unsigned(TASK & A(15 downto 13)));
 
-	Z_i(18 downto 14) <=
+	Z_i(20 downto 13) <=
 		-- VDG
-		B(18 downto 14) when z_video else
+		"00" & B(18 downto 13) when z_video else
+		-- MMU disabled
+		"00000" & A(15 downto 13) when z_cpu and MMU_EN = '0' and is_COMMON = false else
 		-- CPU
-		page_map(mpu_page)(4 downto 0) when z_cpu and is_COMMON = false else
+		page_map(mpu_page)(7 downto 0) when z_cpu and is_COMMON = false else
 		-- DEFAULT
-		"11111";
+		"11111111";
 
-	Z_i(13 downto 0) <=
+	Z_i(12 downto 0) <=
 		-- CPU
-		A(13 downto 0) when z_cpu else
+		A(12 downto 0) when z_cpu else
 		-- VDG
-		B(13 downto 1) & DA0 when z_video else
+		B(12 downto 1) & DA0 when z_video else
 		-- DEFAULT
-		"11111111111111";
+		"1111111111111";
 
 	Z <= Z_i;
 	nZ0 <= not Z_i(0);

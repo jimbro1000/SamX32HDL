@@ -96,47 +96,47 @@ always @(negedge clk) begin
 			endcase
 			case (HRES) // can't handle 64-160 without higher video clock rate!
 				3'b000: begin // 16 bpr
-					BytesPerRow <= 4'd16;
+					BytesPerRow <= 7'd16;
 					LeftMargin <= 11'd112;
 					RightMargin <= 11'd892;
 					fast_video <= 1'b0;
 					//PixelWidth <= 2; // 2 * BPP
 				end
 				3'b010: begin // 32 bpr
-					BytesPerRow <= 4'd32;
+					BytesPerRow <= 7'd32;
 					LeftMargin <= 11'd112;
 					RightMargin <= 11'd892;
 					fast_video <= 1'b0;
 					//PixelWidth <= 1;
 				end
 				3'b001: begin // 20 bpr
-					BytesPerRow <= 4'd20;
+					BytesPerRow <= 7'd20;
 					LeftMargin <= 11'd80; //20;
 					RightMargin <= 11'd924; //231;
 					fast_video <= 1'b0;
 					//PixelWidth <= 2;
 				end
 				3'b011: begin // 40 bpr
-					BytesPerRow <= 4'd40;
+					BytesPerRow <= 7'd40;
 					LeftMargin <= 11'd80;
 					RightMargin <= 11'd924;
 					fast_video <= 1'b0;
 					//PixelWidth <= 1;
 				end
 				3'b100: begin // 64 bpr
-					BytesPerRow <= 4'd64;
+					BytesPerRow <= 7'd64;
 					LeftMargin <= 11'd56;
 					RightMargin <= 11'd892;
 					fast_video <= 1'b1;
 				end
 				3'b101: begin // 80 bpr
-					BytesPerRow <= 4'd80;
+					BytesPerRow <= 7'd80;
 					LeftMargin <= 11'd80;
 					RightMargin <= 11'd924;
 					fast_video <= 1'b1;
 				end
 				default: begin // default unsafe modes to basic
-					BytesPerRow <= 4'd32;
+					BytesPerRow <= 7'd32;
 					LeftMargin <= 11'd112;
 					RightMargin <= 11'd892;
 					//PixelWidth <= 1;
@@ -146,25 +146,25 @@ always @(negedge clk) begin
 			BPP <= 1;
 			case ({HRES[2],HRES[0]})
 				2'b00: begin // 32 cols
-					BytesPerRow <= 4'd32;
+					BytesPerRow <= 7'd32;
 					LeftMargin <= 11'd112;
 					RightMargin <= 11'd892;
 					fast_video <= 1'b0;
 				end
 				2'b01: begin // 40 cols
-					BytesPerRow <= 4'd40;
+					BytesPerRow <= 7'd40;
 					LeftMargin <= 11'd80;
 					RightMargin <= 11'd924;
 					fast_video <= 1'b0;
 				end
 				2'b00: begin // 64 cols
-					BytesPerRow <= 4'd64;
+					BytesPerRow <= 7'd64;
 					LeftMargin <= 11'd112;
 					RightMargin <= 11'd892;
 					fast_video <= 1'b1;
 				end
 				default: begin
-					BytesPerRow <= 4'd80;
+					BytesPerRow <= 7'd80;
 					LeftMargin <= 11'd80;
 					RightMargin <= 11'd924;
 					fast_video <= 1'b1;
