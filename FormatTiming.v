@@ -26,14 +26,14 @@ module FormatTiming(
 	input Clk,
 	input VC_EN,
 	input BP,
-	input BytesPerRow,
-	input LeftBorderMargin,
-	input RightBorderMargin,
-	input AllRows,
-	input TopBlank,
-	input TopMargin,
-	input BottomMargin,
-	input BPP,
+	input [6:0] BytesPerRow,
+	input [10:0] LeftBorderMargin,
+	input [10:0] RightBorderMargin,
+	input [8:0] AllRows,
+	input [8:0] TopBlank,
+	input [8:0] TopMargin,
+	input [8:0] BottomMargin,
+	input [2:0] BPP,
 	output PixelClk,
 	output reg HSn,
 	output reg FSn,
@@ -45,26 +45,28 @@ module FormatTiming(
    );
 	
 	reg activeRow;
-	wire [9:0] frameTopRow;
-	wire [9:0] frameBottomRow;
-	wire [9:0] frameAllRows;
-	wire [9:0] frameVBlank;
-	wire [9:0] frameVSync;
-	wire [9:0] leftpreload;
-	wire [9:0] rightpreload;
+	wire [8:0] frameTopRow;
+	wire [8:0] frameBottomRow;
+	wire [8:0] frameAllRows;
+	wire [8:0] frameVBlank;
+	wire [8:0] frameVSync;
+	wire [10:0] leftpreload;
+	wire [10:0] rightpreload;
 	wire slowMode;
 	reg u_da0;
 	reg hBlank;
 	reg vBlank;
 
 	// horizontal beam counter using gclk for frame timing accuracy
-	reg [8:0] colCounter;
+	reg [10:0] colCounter;
 	// vertical beam counter
 	reg [8:0] lineCounter;
 	// preload data pixel counter
-	reg [1:0] daCount;
+	reg [7:0] daCount;
 	// enable data address count - stops at end of line, starts 2 clocks before first display byte on each line
 	reg daCountEnable;
+	// how many clock counts needed to trigger a change to da
+	reg [6:0] daResetLimit;
 	reg [3:0] alphaRowCounter;
 	
 	always @(negedge Clk) begin
@@ -112,7 +114,7 @@ module FormatTiming(
 		end
 
 		daCount <= daCount + 2'd1;
-		if (daCount == 2'd0)
+		if (daCount == daResetLimit)
 			if (daCountEnable)
 				u_da0 <= ~u_da0;
 			else if (HSn)
@@ -134,10 +136,10 @@ module FormatTiming(
 	assign alphaRow = alphaRowCounter;
 		
 	// horizontal
-	parameter leftSync = 9'd14; // 4us duration
-	parameter leftMargin = 9'd28; // 12us duration //42
-	parameter rightMargin = 9'd223; // suggested 8 cycles of front porch //225
-	parameter allcols = 9'd227; // 64us duration (63.55)
+	parameter leftSync = 11'd56; //14; // 4us duration
+	parameter leftMargin = 11'd112; //28; // 12us duration //42
+	parameter rightMargin = 11'd892; //223; // suggested 8 cycles of front porch //225
+	parameter allcols = 11'd916; //227; // 64us duration (63.55 at 3.57MHz x 227 / 63.9 at 14.32MHz x 916 )
 	// vertical
 //	parameter activerows = 9'd192;
 	// pal
@@ -162,9 +164,94 @@ module FormatTiming(
 //	parameter rightcols = 9'd192; //leftcols + activecols + 1;
 //	parameter leftpreload = 9'd63; //leftcols - 4;
 //	parameter rightpreload = 9'd217; //rightcols - 4;
-	assign leftpreload = LeftBorderMargin - 9'd4;
-	assign rightpreload = RightBorderMargin - 9'd4;
+	reg [3:0] preloadOffset = 4'd16;
+	assign leftpreload = LeftBorderMargin - preloadOffset;
+	assign rightpreload = RightBorderMargin - preloadOffset;
 
+	always @(BPP) begin // very speculatively split into logic on bits per pixel but likely unnecessary...
+		if (BPP == 3'd1) begin
+			case (BytesPerRow)
+				6'd80 : begin
+					preloadOffset <= 4'd8; // 640 x 1 pixels wide
+					daResetLimit <= 8;
+				end
+				6'd64 : begin
+					preloadOffset <= 4'd8; // 512 x 1 pixels wide
+					daResetLimit <= 8;
+				end
+				6'd40 : begin
+					preloadOffset <= 4'd16; // 320 x 1 pixels wide
+					daResetLimit <= 16;
+				end
+				default: begin
+					preloadOffset <= 4'd16; // 256 x 1 pixels wide
+					daResetLimit <= 16;
+				end
+			endcase
+		end else if (BPP == 3'd2) begin
+			case (BytesPerRow)
+				6'd80 : begin
+					preloadOffset <= 4'd8; // 320 x 1 pixels wide
+					daResetLimit <= 16;
+				end
+				6'd64 : begin
+					preloadOffset <= 4'd8; // 256 x 1 pixels wide
+					daResetLimit <= 16;
+				end
+				6'd40 : begin
+					preloadOffset <= 4'd16; // 160 x 2 pixels wide
+					daResetLimit <= 32;
+				end
+				default: begin
+					preloadOffset <= 4'd16; // 128 x 2 pixels wide
+					daResetLimit <= 32;
+				end
+			endcase
+		end else if (BPP == 3'd4) begin
+			case (BytesPerRow)
+				6'd80 : begin
+					preloadOffset <= 4'd8; // 160 x 2 pixels wide
+					daResetLimit <= 32;
+				end
+				6'd64 : begin
+					preloadOffset <= 4'd8; // 128 x 2 pixels wide
+					daResetLimit <= 32;
+				end
+				6'd40 : begin
+					preloadOffset <= 4'd16; // 80 x 4 pixels wide
+					daResetLimit <= 64;
+				end
+				default: begin
+					preloadOffset <= 4'd16; // 64 x 4 pixels wide
+					daResetLimit <= 64;
+				end
+			endcase
+		end else begin // 8BPP
+			case (BytesPerRow)
+				6'd0 : begin
+					preloadOffset <= 4'd1; // actually 256 byte width
+					daResetLimit <= 1;
+				end
+				6'd80 : begin
+					preloadOffset <= 4'd8; // 40 x 8 pixels wide
+					daResetLimit <= 64;
+				end
+				6'd64 : begin
+					preloadOffset <= 4'd8; // 32 x 8 pixels wide
+					daResetLimit <= 64;
+				end
+				6'd40 : begin
+					preloadOffset <= 4'd16; // 20 x 16 pixels wide
+					daResetLimit <= 128;
+				end
+				default: begin
+					preloadOffset <= 4'd16; // 16 x 16 pixels wide
+					daResetLimit <= 128;
+				end
+			endcase
+		end
+	end
+	
 	initial begin
 	   u_da0 = 1'b1;
 		colCounter = 0;

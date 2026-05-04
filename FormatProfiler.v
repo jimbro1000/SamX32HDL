@@ -9,13 +9,13 @@ module FormatProfiler (
 	input [2:0] CRES,
 	input [2:0] LPF,
 	output reg [6:0] BytesPerRow,
-	output reg [9:0] LeftMargin,
-	output reg [9:0] RightMargin,
-	output reg [9:0] AllRows,
-	output reg [9:0] TopBlank,
-	output reg [9:0] TopMargin,
-	output reg [9:0] BottomMargin,
-	output reg [3:0] BPP,
+	output reg [10:0] LeftMargin,
+	output reg [10:0] RightMargin,
+	output reg [8:0] AllRows,
+	output reg [8:0] TopBlank,
+	output reg [8:0] TopMargin,
+	output reg [8:0] BottomMargin,
+	output reg [2:0] BPP,
 	output reg fast_video
 );
 
@@ -23,8 +23,8 @@ initial begin
 	// default to PAL alpha
 	BytesPerRow <= 7'd32;
 	BPP <= 4'd1;
-	LeftMargin <= 9'd28;
-	RightMargin <= 9'd223;
+	LeftMargin <= 11'd112; //28;
+	RightMargin <= 11'd892; //223;
 	AllRows <= 9'd311;
 	TopBlank <= 9'd57;
 	TopMargin <= 9'd84;
@@ -42,8 +42,8 @@ always @(negedge clk) begin
 	end
 	if (VC_EN == 1) begin // compatibility mode
 		BytesPerRow <= 7'd32;
-		LeftMargin <= 9'd28;
-		RightMargin <= 9'd223;
+		LeftMargin <= 11'd112;
+		RightMargin <= 11'd892;
 		if (format == 1) begin // ntsc
 			TopMargin <= 9'd45;
 			BottomMargin <= 9'd237;
@@ -97,48 +97,48 @@ always @(negedge clk) begin
 			case (HRES) // can't handle 64-160 without higher video clock rate!
 				3'b000: begin // 16 bpr
 					BytesPerRow <= 4'd16;
-					LeftMargin <= 9'd28;
-					RightMargin <= 9'd223;
+					LeftMargin <= 11'd112;
+					RightMargin <= 11'd892;
 					fast_video <= 1'b0;
 					//PixelWidth <= 2; // 2 * BPP
 				end
 				3'b010: begin // 32 bpr
 					BytesPerRow <= 4'd32;
-					LeftMargin <= 9'd28;
-					RightMargin <= 9'd223;
+					LeftMargin <= 11'd112;
+					RightMargin <= 11'd892;
 					fast_video <= 1'b0;
 					//PixelWidth <= 1;
 				end
 				3'b001: begin // 20 bpr
 					BytesPerRow <= 4'd20;
-					LeftMargin <= 9'd20;
-					RightMargin <= 9'd231;
+					LeftMargin <= 11'd80; //20;
+					RightMargin <= 11'd924; //231;
 					fast_video <= 1'b0;
 					//PixelWidth <= 2;
 				end
 				3'b011: begin // 40 bpr
 					BytesPerRow <= 4'd40;
-					LeftMargin <= 9'd20;
-					RightMargin <= 9'd231;
+					LeftMargin <= 11'd80;
+					RightMargin <= 11'd924;
 					fast_video <= 1'b0;
 					//PixelWidth <= 1;
 				end
 				3'b100: begin // 64 bpr
 					BytesPerRow <= 4'd64;
-					LeftMargin <= 9'd28;
-					RightMargin <= 9'd223;
+					LeftMargin <= 11'd56;
+					RightMargin <= 11'd892;
 					fast_video <= 1'b1;
 				end
 				3'b101: begin // 80 bpr
 					BytesPerRow <= 4'd80;
-					LeftMargin <= 9'd20;
-					RightMargin <= 9'd231;
+					LeftMargin <= 11'd80;
+					RightMargin <= 11'd924;
 					fast_video <= 1'b1;
 				end
 				default: begin // default unsafe modes to basic
 					BytesPerRow <= 4'd32;
-					LeftMargin <= 9'd28;
-					RightMargin <= 9'd223;
+					LeftMargin <= 11'd112;
+					RightMargin <= 11'd892;
 					//PixelWidth <= 1;
 				end
 			endcase
@@ -147,30 +147,29 @@ always @(negedge clk) begin
 			case ({HRES[2],HRES[0]})
 				2'b00: begin // 32 cols
 					BytesPerRow <= 4'd32;
-					LeftMargin <= 9'd28;
-					RightMargin <= 9'd223;
+					LeftMargin <= 11'd112;
+					RightMargin <= 11'd892;
 					fast_video <= 1'b0;
 				end
 				2'b01: begin // 40 cols
 					BytesPerRow <= 4'd40;
-					LeftMargin <= 9'd20;
-					RightMargin <= 9'd231;
+					LeftMargin <= 11'd80;
+					RightMargin <= 11'd924;
 					fast_video <= 1'b0;
 				end
 				2'b00: begin // 64 cols
 					BytesPerRow <= 4'd64;
-					LeftMargin <= 9'd28;
-					RightMargin <= 9'd223;
+					LeftMargin <= 11'd112;
+					RightMargin <= 11'd892;
 					fast_video <= 1'b1;
 				end
 				default: begin
 					BytesPerRow <= 4'd80;
-					LeftMargin <= 9'd20;
-					RightMargin <= 9'd231;
+					LeftMargin <= 11'd80;
+					RightMargin <= 11'd924;
 					fast_video <= 1'b1;
 				end
 			endcase
-			BPP <= 1;
 		end
 	end
 end

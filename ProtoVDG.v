@@ -107,8 +107,8 @@ module ProtoVDG(
 						);
 				
 	wire [6:0] BPR;
-	wire [8:0] LeftMargin;
-	wire [8:0] RightMargin;
+	wire [10:0] LeftMargin;
+	wire [10:0] RightMargin;
 	wire [8:0] AllRows;
 	wire [8:0] TopBlank;
 	wire [8:0] TopMargin;
