@@ -9,9 +9,7 @@ module SAMx32(
 	//input CSS,
 	//input AnG,
 	input [7:0] CD,
-	
 	input [7:0] RD,
-	
 	output [11:0] RGBout,
 	output Format,
 	output [19:0] Z,
@@ -47,6 +45,7 @@ module SAMx32(
 	wire [2:0] HRES;  // Horizontal Resolution
 	wire [7:0] BRDR;  // Border Colour
 	wire VR;				// Request fast video
+	wire VLC;	      // video load clock
 	
 	reg [7:0] VD;     // Video data buffer
 	
@@ -88,6 +87,7 @@ module SAMx32(
 		.BP (BP),
 		.HRES (HRES),
 		.BRDR (BRDR),
+		.VideoLoadClock (VLC),
 		.VR(VR)
 	);
 			  
@@ -96,7 +96,6 @@ module SAMx32(
 	assign Z = ZI[19:0];
 
 	ProtoVDG VDG (
-		.Q (Q),
 		.AnG (AnG),
 		.AnS (RD[7]),
 		.Clk (VClk),
@@ -119,6 +118,7 @@ module SAMx32(
 		.BP (BP),
 		.HRES (HRES),
 		.BRDR (BRDR),
+		.VideoLoadClock (VLC),
 		.VR(VR)
 	);
 endmodule

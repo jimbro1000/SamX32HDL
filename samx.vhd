@@ -237,6 +237,7 @@ entity samx is
 			  BP : out std_logic; -- bitmap mode
 			  HRES : out std_logic_vector (2 downto 0); -- horizontal res
 			  BRDR : out std_logic_vector (7 downto 0); -- border colour
+			  VideoLoadClock : out std_logic;
 			  VR : in std_logic -- video speed request
 	     );
 end;
@@ -632,6 +633,9 @@ begin
 
 	-- Restart VDG, if stopped
 	vdg_start <= true when T = TB else false;
+	
+	-- Provide video clock signal to synchronise timing
+	VideoLoadClock <= '1' when z_video else '0';
 
 	-- This is the main state machine, advanced by BOSC falling edge.
 	-- E and Q timings remain as they are in the original SAM (including

@@ -1,5 +1,4 @@
 module ProtoVDG(
-	Q,
 	GClk,
 	AnG,
 	AnS,
@@ -24,10 +23,10 @@ module ProtoVDG(
 	BP,
 	HRES,
 	BRDR,
+	VideoLoadClock,
 	VR
 );
 
-	input Q;
 	input GClk;
 	input AnG;
 	input AnS;
@@ -45,6 +44,7 @@ module ProtoVDG(
 	input BP;
 	input [2:0] HRES;
 	input [7:0] BRDR;
+	input VideoLoadClock;
 	output [3:0] AlphaRow;
 	output [6:0] AlphaCode;
 	output DA0;
@@ -137,7 +137,6 @@ module ProtoVDG(
 	);
 	// Frame timing generator - orchestrate sync, data pre-load
 	FormatTiming	FmtTiming (
-							.Q(Q),
 							.AnG(useAlpha), 
 							.Clk(Clk), 
 							.VC_EN(VC_EN),

@@ -19,7 +19,6 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module FormatTiming(
-	input Q,
 	input [2:0] GMode,
 	input FrameFormat,
 	input AnG,
@@ -34,6 +33,7 @@ module FormatTiming(
 	input [8:0] TopMargin,
 	input [8:0] BottomMargin,
 	input [2:0] BPP,
+	input VideoLoadClock,
 	output PixelClk,
 	output reg HSn,
 	output reg FSn,
@@ -62,7 +62,7 @@ module FormatTiming(
 	// vertical beam counter
 	reg [8:0] lineCounter;
 	// preload data pixel counter
-	reg [7:0] daCount;
+	reg [6:0] daCount;
 	// enable data address count - stops at end of line, starts 2 clocks before first display byte on each line
 	reg daCountEnable;
 	// how many clock counts needed to trigger a change to da
@@ -80,6 +80,7 @@ module FormatTiming(
 				FSn <= 1'b0;
 				vBlank <= 1'b1;
 			end else begin
+				// logic will deliberately fall through
 				lineCounter <= lineCounter + 9'd1;
 				if (lineCounter == frameVSync)
 					FSn <= 1'b1;
@@ -94,8 +95,8 @@ module FormatTiming(
 				else
 					alphaRowCounter <= alphaRowCounter + 4'd1;
 			end
-			
 		end else begin
+			// logic will deliberately fall through
 			colCounter <= colCounter + 9'd1;
 			if (colCounter == leftSync)
 				HSn <= 1'b1;
@@ -129,7 +130,9 @@ module FormatTiming(
 
 	// only change DA0 on falling edge of Q, guarantees the change is in phase with SAM
 	// may need to move preload to a full 4 cycles before it is needed
-	always @(negedge Q) begin
+	// fine when single speed video but need to operate on double speed and falling edge of Q moves on cpu double speed
+	// better clock trigger required! States 3 and B of state machine would be ideal - effectively the z_video signal
+	always @(posedge VideoLoadClock) begin
 		DA0 <= u_da0;
 	end
 	
@@ -141,29 +144,13 @@ module FormatTiming(
 	parameter rightMargin = 11'd892; //223; // suggested 8 cycles of front porch //225
 	parameter allcols = 11'd916; //227; // 64us duration (63.55 at 3.57MHz x 227 / 63.9 at 14.32MHz x 916 )
 	// vertical
-//	parameter activerows = 9'd192;
-	// pal
 	parameter vsync = 9'd7;
-//	parameter topBlank = 9'd57; //pal
-//	parameter toprow = 9'd84;
-//	parameter bottomrow = 9'd276; //pal
-//	parameter allrows = 9'd311;// pal
 	// best = 7, 20, 95, 287, 311
 	// target = 32, 45, 95, 287, 311 
 	
-	// ntsc
-//	parameter vsync2 = 9'd7;
-//	parameter topBlank2 = 9'd32; //ntsc
-//	parameter toprow2 = 9'd45;
-//	parameter bottomrow2 = 9'd237; //ntsc
-//	parameter allrows2 = 9'd258;// ntsc
+	// parameter activecols = 128;// * 2 = 256
+	// to achieve 40 data access cycles per line the preload must start at 66-69 clock cycles
 
-	//parameter activecols = 128;// * 2 = 256
-	//to achieve 40 data access cycles per line the preload must start at 66-69 clock cycles
-//	parameter leftcols = 9'd64; //
-//	parameter rightcols = 9'd192; //leftcols + activecols + 1;
-//	parameter leftpreload = 9'd63; //leftcols - 4;
-//	parameter rightpreload = 9'd217; //rightcols - 4;
 	reg [3:0] preloadOffset = 4'd16;
 	assign leftpreload = LeftBorderMargin - preloadOffset;
 	assign rightpreload = RightBorderMargin - preloadOffset;
@@ -173,80 +160,80 @@ module FormatTiming(
 			case (BytesPerRow)
 				6'd80 : begin
 					preloadOffset <= 4'd8; // 640 x 1 pixels wide
-					daResetLimit <= 8;
+					daResetLimit <= 7'd8;
 				end
 				6'd64 : begin
 					preloadOffset <= 4'd8; // 512 x 1 pixels wide
-					daResetLimit <= 8;
+					daResetLimit <= 7'd8;
 				end
 				6'd40 : begin
 					preloadOffset <= 4'd16; // 320 x 1 pixels wide
-					daResetLimit <= 16;
+					daResetLimit <= 7'd16;
 				end
 				default: begin
 					preloadOffset <= 4'd16; // 256 x 1 pixels wide
-					daResetLimit <= 16;
+					daResetLimit <= 7'd16;
 				end
 			endcase
 		end else if (BPP == 3'd2) begin
 			case (BytesPerRow)
 				6'd80 : begin
 					preloadOffset <= 4'd8; // 320 x 1 pixels wide
-					daResetLimit <= 16;
+					daResetLimit <= 7'd16;
 				end
 				6'd64 : begin
 					preloadOffset <= 4'd8; // 256 x 1 pixels wide
-					daResetLimit <= 16;
+					daResetLimit <= 7'd16;
 				end
 				6'd40 : begin
 					preloadOffset <= 4'd16; // 160 x 2 pixels wide
-					daResetLimit <= 32;
+					daResetLimit <= 7'd32;
 				end
 				default: begin
 					preloadOffset <= 4'd16; // 128 x 2 pixels wide
-					daResetLimit <= 32;
+					daResetLimit <= 7'd32;
 				end
 			endcase
 		end else if (BPP == 3'd4) begin
 			case (BytesPerRow)
 				6'd80 : begin
 					preloadOffset <= 4'd8; // 160 x 2 pixels wide
-					daResetLimit <= 32;
+					daResetLimit <= 7'd32;
 				end
 				6'd64 : begin
 					preloadOffset <= 4'd8; // 128 x 2 pixels wide
-					daResetLimit <= 32;
+					daResetLimit <= 7'd32;
 				end
 				6'd40 : begin
 					preloadOffset <= 4'd16; // 80 x 4 pixels wide
-					daResetLimit <= 64;
+					daResetLimit <= 7'd64;
 				end
 				default: begin
 					preloadOffset <= 4'd16; // 64 x 4 pixels wide
-					daResetLimit <= 64;
+					daResetLimit <= 7'd64;
 				end
 			endcase
 		end else begin // 8BPP
 			case (BytesPerRow)
 				6'd0 : begin
 					preloadOffset <= 4'd1; // actually 256 byte width
-					daResetLimit <= 1;
+					daResetLimit <= 7'd1;
 				end
 				6'd80 : begin
 					preloadOffset <= 4'd8; // 40 x 8 pixels wide
-					daResetLimit <= 64;
+					daResetLimit <= 7'd64;
 				end
 				6'd64 : begin
 					preloadOffset <= 4'd8; // 32 x 8 pixels wide
-					daResetLimit <= 64;
+					daResetLimit <= 7'd64;
 				end
 				6'd40 : begin
 					preloadOffset <= 4'd16; // 20 x 16 pixels wide
-					daResetLimit <= 128;
+					daResetLimit <= 7'd128;
 				end
 				default: begin
 					preloadOffset <= 4'd16; // 16 x 16 pixels wide
-					daResetLimit <= 128;
+					daResetLimit <= 7'd128;
 				end
 			endcase
 		end
@@ -258,7 +245,7 @@ module FormatTiming(
 		lineCounter = 0;
 		Clk3 = 0;
 		alphaRowCounter = 0;
-		daCount = 2'd0;
+		daCount = 7'd0;
 	end
 
 	// vertical sync active low
