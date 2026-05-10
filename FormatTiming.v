@@ -69,6 +69,19 @@ module FormatTiming(
 	reg [7:0] daResetLimit;
 	reg [3:0] alphaRowCounter;
 	
+	// horizontal
+	parameter leftSync = 11'd56; //14; // 4us duration
+	parameter leftMargin = 11'd112; //28; // 12us duration //42
+	parameter rightMargin = 11'd892; //223; // suggested 8 cycles of front porch //225
+	parameter allcols = 11'd916; //227; // 64us duration (63.55 at 3.57MHz x 227 / 63.9 at 14.32MHz x 916 )
+	// vertical
+	parameter vsync = 9'd7;
+	// best = 7, 20, 95, 287, 311
+	// target = 32, 45, 95, 287, 311 
+	
+	// parameter activecols = 128;// * 2 = 256
+	// to achieve 40 data access cycles per line the preload must start at 66-69 clock cycles
+
 	always @(negedge Clk) begin
 		if (colCounter == allcols) begin
 			colCounter <= 0;
@@ -138,19 +151,6 @@ module FormatTiming(
 	
 	assign alphaRow = alphaRowCounter;
 		
-	// horizontal
-	parameter leftSync = 11'd56; //14; // 4us duration
-	parameter leftMargin = 11'd112; //28; // 12us duration //42
-	parameter rightMargin = 11'd892; //223; // suggested 8 cycles of front porch //225
-	parameter allcols = 11'd916; //227; // 64us duration (63.55 at 3.57MHz x 227 / 63.9 at 14.32MHz x 916 )
-	// vertical
-	parameter vsync = 9'd7;
-	// best = 7, 20, 95, 287, 311
-	// target = 32, 45, 95, 287, 311 
-	
-	// parameter activecols = 128;// * 2 = 256
-	// to achieve 40 data access cycles per line the preload must start at 66-69 clock cycles
-
 	reg [4:0] preloadOffset = 5'd16;
 	assign leftpreload = LeftBorderMargin - preloadOffset;
 	assign rightpreload = RightBorderMargin - preloadOffset;

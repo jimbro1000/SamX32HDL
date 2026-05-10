@@ -5,9 +5,9 @@ module SAMx32(
 	input RWn,
 	input OSCin,
 	input RSTn,
-	//input [2:0] GM,
-	//input CSS,
-	//input AnG,
+	input [2:0] GM,
+	input CSS,
+	input AnG,
 	input [7:0] CD,
 	input [7:0] RD,
 	output [11:0] RGBout,
@@ -34,9 +34,9 @@ module SAMx32(
 	wire VClk;			// Video clock
 	wire DA0;			// Video data access read
 	wire RFormat;     // Requested video format (redundant?)
-	wire AnG;         // Alpha/Graphic mode select
-	wire CSS;         // Colour set select
-	wire [2:0] GM;    // Graphic mode selector
+//	wire AnG;         // Alpha/Graphic mode select
+//	wire CSS;         // Colour set select
+//	wire [2:0] GM;    // Graphic mode selector
 	wire VCE;         // Video Compatible Mode Enable
 	wire [127:0] Palette; // 16x8 palette table
 	wire [2:0] CRES;  // Bits per pixel (1/2/4/8)
@@ -49,15 +49,15 @@ module SAMx32(
 	
 	reg [7:0] VD;     // Video data buffer
 	
-	ControlSignalCapture shadowPIA (
-		.Clk (E),
-		.S (S),
-		.A (A[1:0]),
-		.D (RD[7:3]),
-		.AnG (AnG),
-		.GM (GM),
-		.CSS (CSS)
-	);
+//	ControlSignalCapture shadowPIA (
+//		.Clk (E),
+//		.S (S),
+//		.A (A[1:0]),
+//		.D (RD[7:3]),
+//		.AnG (AnG),
+//		.GM (GM),
+//		.CSS (CSS)
+//	);
 	
 	samx	SAM (
 		.OscOut (OSCin),
@@ -121,4 +121,80 @@ module SAMx32(
 		.VideoLoadClock (VLC),
 		.VR(VR)
 	);
+
+endmodule
+
+module SAMx32_testbench();
+
+	reg [15:0] A;
+	reg RWn;
+	reg OSCin;
+	reg RSTn;
+	reg [2:0] GM;
+	reg CSS;
+	reg AnG;
+	reg [7:0] CD;
+	reg [7:0] RD;
+	wire [11:0] RGBout;
+	wire Format;
+	wire [19:0] Z;
+	wire Z0n;
+	wire CE1n;
+	wire CE2n;
+	wire WEn;
+	wire [2:0] S;
+	wire Q;
+	wire E;
+	wire [6:0] CC;
+	wire [3:0] CR;
+	wire HSn;
+	wire FSn;
+	
+	parameter clockCycle = 34920;
+
+	SAMx32 uut (
+		.A(A),
+		.RWn(RWn),
+		.OSCin(OSCin),
+		.RSTn(RSTn),
+		.GM(GM),
+		.CSS(CSS),
+		.AnG(AnG),
+		.CD(CD),
+		.RD(RD),
+		.RGBout(RGBout),
+		.Format(Format),
+		.Z(Z),
+		.Z0n(Z0n),
+		.CE1n(CE1n),
+		.CE2n(CE2n),
+		.WEn(WEn),
+		.S(S),
+		.Q(Q),
+		.E(E),
+		.CC(CC),
+		.CR(CR),
+		.HSn(HSn),
+		.FSn(FSn)
+	);
+	
+	initial begin
+		A = 16'd65535;
+		RWn = 1'b1;
+		OSCin = 1'b0;
+		RSTn = 1'b0;
+		GM = 3'd0;
+		CSS = 1'b0;
+		AnG  = 1'b0;
+		CD = 8'd0;
+		RD = 8'd0;
+		
+		#(clockCycle * 8) RSTn = 1'b1; // hold in reset for 4 ticks
+
+	end
+	
+	always begin
+	  #(clockCycle) OSCin = ~OSCin;
+	end
+
 endmodule

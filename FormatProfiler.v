@@ -15,7 +15,7 @@ module FormatProfiler (
 	output reg [8:0] TopBlank,
 	output reg [8:0] TopMargin,
 	output reg [8:0] BottomMargin,
-	output reg [2:0] BPP,
+	output reg [3:0] BPP,
 	output reg fast_video
 );
 
@@ -86,13 +86,13 @@ always @(negedge clk) begin
 		if (BP) begin //bitmap mode
 			case (CRES)
 				2'b00:
-					BPP <= 1;
+					BPP <= 4'd1;
 				2'b01:
-					BPP <= 2;
+					BPP <= 4'd2;
 				2'b10:
-					BPP <= 4;
+					BPP <= 4'd4;
 				2'b11:
-					BPP <= 8;
+					BPP <= 4'd8;
 			endcase
 			case (HRES) // can't handle 64-160 without higher video clock rate!
 				3'b000: begin // 16 bpr
@@ -157,7 +157,7 @@ always @(negedge clk) begin
 					RightMargin <= 11'd924;
 					fast_video <= 1'b0;
 				end
-				2'b00: begin // 64 cols
+				2'b10: begin // 64 cols
 					BytesPerRow <= 7'd64;
 					LeftMargin <= 11'd112;
 					RightMargin <= 11'd892;

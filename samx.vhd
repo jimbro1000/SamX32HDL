@@ -256,7 +256,7 @@ architecture rtl of samx is
 	signal is_FF9x : boolean;
 	signal is_FFAx : boolean;
 	signal is_FFBx : boolean;
-	signal is_FFDx : boolean;
+	--signal is_FFDx : boolean;
 	signal is_SAM_REG : boolean;
 	signal is_IRQ_VEC : boolean;
 
@@ -300,37 +300,38 @@ architecture rtl of samx is
 	-- alternatively use the GIME style registers to define video behaviour and ignore
 	-- the V register values when compatibility mode is disabled
 	
-	signal V : std_logic_vector(2 downto 0) := (others => '0');
+	signal V : std_logic_vector(2 downto 0); -- := (others => '0');
 
 	-- F: VDG address offset.  Extends the 7 bits of the original to 14
 	-- bits, allowing a base address anywhere in the 512K in multiples of
 	-- 32 bytes.
-	signal F : std_logic_vector(18 downto 5) := (others => '0');
-	signal FA : std_logic_vector(18 downto 3) := (others => '0');
-	signal VC : std_logic := '1';
-	signal MMU_EN : std_logic := '0';
-	signal INIT0 : std_logic_vector(7 downto 0) := "11000000";
+	signal F : std_logic_vector(18 downto 5); -- := (others => '0');
+	signal FA : std_logic_vector(18 downto 3); -- := (others => '0');
+	signal VC : std_logic; -- := '1';
+	signal MMU_EN : std_logic; -- := '0';
+--	signal INIT0 : std_logic_vector(7 downto 0) := "11000000";
 
 	-- R: CPU rate.
-	signal R : std_logic := '0';
+	signal R : std_logic; -- := '0';
 
 	-- TY: Map type.  0 selects 32K RAM, 32K ROM.  1 selects 64K RAM.
-	signal TY : std_logic := '0';
+	signal TY : std_logic; -- := '0';
 
 	-- DAT registers
 
 	-- Page select.  Which of 32 × 16K sections of RAM is mapped into each
 	-- of 8 × 8K CPU address regions (× 2 TASKs).
-	type page_map_array is array (0 to 15) of std_logic_vector(7 downto 0);
-	constant INIT_PAGE_MAP : page_map_array := (
-		"00000000", "00000001", "00000010", "00000011",
-		"00000100", "00000101", "00000110", "00000111",
-		"00000000", "00000001", "00000010", "00000011",
-		"00000100", "00000101", "00000110", "00000111"
-	);
-	signal page_map : page_map_array := INIT_PAGE_MAP;
+--	type page_map_array is array (0 to 15) of std_logic_vector(7 downto 0);
+--	constant INIT_PAGE_MAP : page_map_array := (
+--		"00000000", "00000001", "00000010", "00000011",
+--		"00000100", "00000101", "00000110", "00000111",
+--		"00000000", "00000001", "00000010", "00000011",
+--		"00000100", "00000101", "00000110", "00000111"
+--	);
+--	signal page_map : page_map_array := INIT_PAGE_MAP;
 
-	signal mpu_page : integer range 0 to 15;
+--	signal mpu_page : integer range 0 to 15;
+	signal mpu_page : std_logic_vector(7 downto 0);
 
 	-- Task register.
 	signal TASK : std_logic := '0';
@@ -338,17 +339,17 @@ architecture rtl of samx is
 	-- Fixed 4K areas at top of RAM (second half of page 31).  Bit
 	-- 0 controls $F000--$FEFF (and vector area), bit 1 controls
 	-- $E000--$EFFF.
-	signal COMMON : std_logic_vector(1 downto 0) := (others => '0');
+	signal COMMON : std_logic_vector(1 downto 0); -- := (others => '0');
 
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Timing
 
 	-- Reference time
-	type time_ref is (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, TA, TB, TC, TD, TE, TF);
+	--type time_ref is (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, TA, TB, TC, TD, TE, TF);
 	signal BOSC : std_logic;
-	signal T : time_ref := T7;
-	signal fast_cycle : boolean := false;
-	signal fast_video : boolean := false;
+	--signal T : time_ref := T7;
+	--signal fast_cycle : boolean := false;
+	--signal fast_video : boolean := false;
 
 	-- Internal port signals
 	signal E_i : std_logic := '0';
@@ -380,20 +381,20 @@ architecture rtl of samx is
 
 	-- Video address counter
 	signal B : std_logic_vector(18 downto 1) := (others => '0');
-	signal Y : std_logic_vector(15 downto 0) := (others => '0');
-	signal X : std_logic_vector(6 downto 0) := (others => '0');
-	signal VMODE : std_logic_vector(7 downto 0) := (others => '0');
-	signal VRES : std_logic_vector(6 downto 0) := (others => '0');
-	signal HOR : std_logic_vector(7 downto 0) := (others => '0');
+	signal Y : std_logic_vector(15 downto 0); -- := (others => '0');
+	signal X : std_logic_vector(6 downto 0); -- := (others => '0');
+	--signal VMODE : std_logic_vector(7 downto 0) := (others => '0');
+	signal VRES : std_logic_vector(6 downto 0); -- := (others => '0');
+	--signal HOR : std_logic_vector(7 downto 0) := (others => '0');
 	signal HVEN : std_logic := '0';
 	signal MOCH : std_logic := '0';
 	signal H50 : std_logic := '0';
 	signal BPI : std_logic := '0';
 	
 	-- Synchronisation
-	signal vdg_da0_window : boolean;
-	signal vdg_start : boolean;
-	signal vdg_sync_error : boolean := false;
+	--signal vdg_da0_window : boolean;
+	--signal vdg_start : boolean;
+	--signal vdg_sync_error : boolean := false;
 
 	-- Counters, dividers
 
@@ -414,7 +415,97 @@ architecture rtl of samx is
 	signal ydiv3_out    : std_logic;
 	signal ydiv2_out    : std_logic;
 	signal clock_b5     : std_logic := '0';
+	
+	COMPONENT Quadrature
+	PORT (
+		OSC : IN STD_LOGIC;
+		R : IN STD_LOGIC;
+		VR : IN STD_LOGIC;
+		Reset : IN STD_LOGIC;
+		is_COMMON : IN boolean;
+		is_RAM : IN boolean;
+		VClk : OUT STD_LOGIC;
+		Q : OUT STD_LOGIC;
+		E : OUT STD_LOGIC;
+		ZCpu : OUT boolean;
+		ZVideo : OUT boolean;
+		VideoLoadClock : OUT STD_LOGIC;
+		nRAS0 : OUT STD_LOGIC;
+		nCE : OUT STD_LOGIC
+	);
+	END COMPONENT;
+	
+	COMPONENT SamRegisters
+	PORT (
+		clk : IN STD_LOGIC;
+		A : IN STD_LOGIC_VECTOR(15 downto 0);
+		D : IN STD_LOGIC_VECTOR(7 downto 0);
+		RWn : IN STD_LOGIC;
+		RSTn : IN STD_LOGIC;
+		Q : IN STD_LOGIC;
+		
+		V : OUT STD_LOGIC_VECTOR(2 downto 0);
+		F : OUT STD_LOGIC_VECTOR(18 downto 5);
+		FA : OUT STD_LOGIC_VECTOR(18 downto 3);
+		VC : OUT STD_LOGIC;
+		MMU_EN : OUT STD_LOGIC;
+		R : OUT STD_LOGIC;
+		TY : OUT STD_LOGIC;
+		TASK : OUT STD_LOGIC;
+		COMMON : OUT STD_LOGIC_VECTOR(1 downto 0);
+		Y : OUT STD_LOGIC_VECTOR(15 downto 0);
+		X : OUT STD_LOGIC_VECTOR(6 downto 0);
+		LPR : OUT STD_LOGIC_VECTOR(2 downto 0);
+		LPF : OUT STD_LOGIC_VECTOR(1 downto 0);
+		HRES : OUT STD_LOGIC_VECTOR(2 downto 0);
+		CRES : OUT STD_LOGIC_VECTOR(1 downto 0);
+		BRDR : OUT STD_LOGIC_VECTOR(7 downto 0);
+		HVEN : OUT STD_LOGIC;
+		MOCH : OUT STD_LOGIC;
+		H50 : OUT STD_LOGIC;
+		FMT : OUT STD_LOGIC;
+		BP : OUT STD_LOGIC;
+		BPI : OUT STD_LOGIC;
+		page : OUT STD_LOGIC_VECTOR(7 downto 0);
+		PDEF : OUT STD_LOGIC_VECTOR(127 downto 0)
+	);
+	END COMPONENT;
+	
+	COMPONENT vdiv2
+	PORT (
+		clk : IN STD_LOGIC;
+		rst : IN STD_LOGIC;
+		q : OUT STD_LOGIC
+	);
+	END COMPONENT;
 
+	COMPONENT vdiv3
+	PORT (
+		clk : IN STD_LOGIC;
+		rst : IN STD_LOGIC;
+		q : OUT STD_LOGIC
+	);
+	END COMPONENT;
+
+	COMPONENT vdiv4
+	PORT (
+		clk : IN STD_LOGIC;
+		rst : IN STD_LOGIC;
+		q : OUT STD_LOGIC
+	);
+	END COMPONENT;
+
+	COMPONENT VCAddressCounter
+	PORT (
+		DA0 : IN STD_LOGIC;
+		HR : IN STD_LOGIC;
+		IER_or_VP : IN STD_LOGIC;
+		V : IN STD_LOGIC_VECTOR(2 downto 0);
+		F : IN STD_LOGIC_VECTOR(18 downto 5);
+		B : OUT STD_LOGIC_VECTOR(18 downto 1)
+	);
+	END COMPONENT;
+		
 begin
 
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -424,13 +515,13 @@ begin
 	is_FFxx    <= A(15 downto 8) = "11111111";
 	is_IO0     <= is_FFxx and A(7 downto 5) = "000";   -- FF0x and FF1x
 	is_IO1     <= is_FFxx and A(7 downto 4) = "0010";  -- FF2x ONLY
-	is_FF3x    <= is_FFxx and A(7 downto 4) = "0011";  -- FF3x ONLY
+--	is_FF3x    <= is_FFxx and A(7 downto 4) = "0011";  -- FF3x ONLY
 	is_IO2     <= is_FFxx and A(7 downto 5) = "010";   -- FF4x and FF5x
-	is_FF9x    <= is_FFxx and A(7 downto 4) = "1001";  -- FF9x ONLY
-	is_FFAx    <= is_FFxx and A(7 downto 4) = "1010";  -- FFAx ONLY
-	is_FFBx    <= is_FFxx and A(7 downto 4) = "1011";  -- FFBx ONLY
-	is_FFDx    <= is_FFxx and A(7 downto 4) = "1101";  -- FFDx ONLY
-	is_SAM_REG <= is_FFxx and A(7 downto 5) = "110";   -- FFCx and FFDx
+--	is_FF9x    <= is_FFxx and A(7 downto 4) = "1001";  -- FF9x ONLY
+--	is_FFAx    <= is_FFxx and A(7 downto 4) = "1010";  -- FFAx ONLY
+--	is_FFBx    <= is_FFxx and A(7 downto 4) = "1011";  -- FFBx ONLY
+	--is_FFDx    <= is_FFxx and A(7 downto 4) = "1101";  -- FFDx ONLY
+--	is_SAM_REG <= is_FFxx and A(7 downto 5) = "110";   -- FFCx and FFDx
 	is_IRQ_VEC <= is_FFxx and A(7 downto 5) = "111";   -- FFEx and FFFx
 
 	-- Upper 32K
@@ -460,136 +551,67 @@ begin
 	     -- RAM
 	     "000";
 
+		  
+
 	-- ADVANCED SAM FEATURES (based on CoCo3 GIME)
 		  
-	VC <= INIT0(7);
-	MMU_EN <= INIT0(6);
-		  
-	FMT <= not H50;
-	BP <= VMODE(7);
-	BPI <= VMODE(5);
-	MOCH <= VMODE(4);
-	H50 <= VMODE(3);
-	LPR <= VMODE(2 downto 0);
-	
-	LPF <= VRES(6 downto 5);
-	HRES <= VRES(4 downto 2);
-	CRES <= VRES(1 downto 0);
-	
-	HVEN <= HOR(7);
-	X <= HOR(6 downto 0);
-	
-	VC_EN <= VC;
+--	VC <= INIT0(7);
+--	MMU_EN <= INIT0(6);
+--		  
+--	FMT <= not H50;
+--	BP <= VMODE(7);
+--	BPI <= VMODE(5);
+--	MOCH <= VMODE(4);
+--	H50 <= VMODE(3);
+--	LPR <= VMODE(2 downto 0);
+--	
+--	LPF <= VRES(6 downto 5);
+--	HRES <= VRES(4 downto 2);
+--	CRES <= VRES(1 downto 0);
+--	
+--	HVEN <= HOR(7);
+--	X <= HOR(6 downto 0);
+--	
+--	VC_EN <= VC;
 
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Registers
+	
+	registers : SamRegisters
+	port map (
+		clk => BOSC,
+		A => A,
+		D => D,
+		RWn => RnW,
+		RSTn => IER,
+		Q => Q_i,
+		V => V,
+		F => F,
+		FA => FA,
+		VC => VC,
+		MMU_EN => MMU_EN,
+		R => R,
+		TY => TY,
+		TASK => TASK,
+		COMMON => COMMON,
+		Y => Y,
+		X => X,
+		LPR => LPR,
+		LPF => LPF,
+		HRES => HRES,
+		CRES => CRES,
+		BRDR => BRDR,
+		HVEN => HVEN,
+		MOCH => MOCH,
+		H50 => H50,
+		FMT => FMT,
+		BP => BP,
+		BPI => BPI,
+		page => mpu_page,
+		PDEF => PDEF
+	);
 
 	-- Latching register writes on the falling edge of Q makes other timing a lot simpler.  In particular, when to open the CPU data gate.
-
-	process (IER, Q_i, RnW, is_FFxx, is_FF3x, is_FF9x, is_SAM_REG)
-	begin
-		if IER = '1' then
-			V <= (others => '0');
-			F <= (others => '0');
-			TASK <= '0';
-			R <= '0';
-			COMMON <= (others => '0');
-			TY <= '0';
-			page_map <= INIT_PAGE_MAP;
-		elsif falling_edge(Q_i) and RnW = '0' then
-			if is_SAM_REG and VC = '1' then
-				-- SAM registers
-				case A(4 downto 1) is
-					when "0000" => V(0) <= A(0);
-					when "0001" => V(1) <= A(0);
-					when "0010" => V(2) <= A(0);
-					when "0011" => F(9) <= A(0);
-					when "0100" => F(10) <= A(0);
-					when "0101" => F(11) <= A(0);
-					when "0110" => F(12) <= A(0);
-					when "0111" => F(13) <= A(0);
-					when "1000" => F(14) <= A(0);
-					when "1001" => F(15) <= A(0);
-					when "1010" => TASK <= A(0);
-					when "1011" => R <= A(0);  -- was R(0)
-					when "1100" => R <= A(0);  -- was R(1)
-					-- 1101 was M(0)
-					-- 1110 was M(1)
-					when "1111" => TY <= A(0);
-					when others => null;
-				end case;
-			elsif is_SAM_REG then
-				case A(4 downto 1) is
-					when "1100" => R <= A(0);
-					when "1101" => R <= A(1);
-					when others => null;
-				end case;
-			elsif is_FFAx then
-				-- Needs a rewrite to accomodate GIME style page map selection
-				-- DAT registers, VDG address extension - GIME uses FFA0-FFA7/FFA8-FFAF depending on TR
-				-- TR is indicated by repurposed page bit
-				case A(3 downto 0) is
-					when "0000" => page_map(0) <= D(7 downto 0);
-					when "0001" => page_map(1) <= D(7 downto 0);
-					when "0010" => page_map(2) <= D(7 downto 0);
-					when "0011" => page_map(3) <= D(7 downto 0);
-					when "0100" => page_map(4) <= D(7 downto 0);
-					when "0101" => page_map(5) <= D(7 downto 0);
-					when "0110" => page_map(6) <= D(7 downto 0);
-					when "0111" => page_map(7) <= D(7 downto 0);
-					when "1000" => page_map(8) <= D(7 downto 0);
-					when "1001" => page_map(9) <= D(7 downto 0);
-					when "1010" => page_map(10) <= D(7 downto 0);
-					when "1011" => page_map(11) <= D(7 downto 0);
-					when "1100" => page_map(12) <= D(7 downto 0);
-					when "1101" => page_map(13) <= D(7 downto 0);
-					when "1110" => page_map(14) <= D(7 downto 0);
-					when "1111" => page_map(15) <= D(7 downto 0);
-					when others => null;
-				end case;
-			elsif is_FFBx then
-				case A(3 downto 0) is
-					when "0000" => PDEF(7 downto 0) <= D(7 downto 0);
-					when "0001" => PDEF(15 downto 8) <= D(7 downto 0);
-					when "0010" => PDEF(23 downto 16) <= D(7 downto 0);
-					when "0011" => PDEF(31 downto 24) <= D(7 downto 0);
-					when "0100" => PDEF(39 downto 32) <= D(7 downto 0);
-					when "0101" => PDEF(47 downto 40) <= D(7 downto 0);
-					when "0110" => PDEF(55 downto 48) <= D(7 downto 0);
-					when "0111" => PDEF(63 downto 56) <= D(7 downto 0);
-					when "1000" => PDEF(71 downto 64) <= D(7 downto 0);
-					when "1001" => PDEF(79 downto 72) <= D(7 downto 0);
-					when "1010" => PDEF(87 downto 80) <= D(7 downto 0);
-					when "1011" => PDEF(95 downto 88) <= D(7 downto 0);
-					when "1100" => PDEF(103 downto 96) <= D(7 downto 0);
-					when "1101" => PDEF(111 downto 104) <= D(7 downto 0);
-					when "1110" => PDEF(119 downto 112) <= D(7 downto 0);
-					when "1111" => PDEF(127 downto 120) <= D(7 downto 0);
-					when others => null;
-				end case;
-			elsif is_FF3x then
-				case A(3 downto 0) is
-					when "1000" => F(18 downto 13) <= D(5 downto 0);
-					when "1001" => F(12 downto 5) <= D(7 downto 0);
-					when "1111" =>
-						COMMON <= D(1 downto 0);
-					when others => null;
-				end case;
-			elsif is_FF9x then
-				case A(3 downto 0) is
-					when "0000" => INIT0 <= D(7 downto 0);
-					when "0001" => TASK <= D(0);
-					when "1000" => VMODE <= D(7 downto 0);
-					when "1001" => VRES <= D(6 downto 0);
-					when "1010" => BRDR <= D(7 downto 0);
-					when "1101" => Y(15 downto 8) <= D(7 downto 0);
-					when "1110" => Y(7 downto 0) <= D(7 downto 0);
-					when "1111" => HOR <= D(7 downto 0);
-					when others => null;
-				end case;
-			end if;
-		end if;
-	end process;
 
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Timing
@@ -607,17 +629,17 @@ begin
 	nWE <= RnW when E_i = '1' and is_RAM else '1';
 
 	-- VRAM strobe.  Latches data slightly earlier in fast cycles.
-	nRAS0 <= '1' when fast_cycle and T = T0 else
-		 '1' when T = T1 or T = T2 or T = T3 or T = T4 or T = T5 else
-		 '0';
+	--nRAS0 <= '1' when fast_cycle and T = T0 else
+	--	 '1' when T = T1 or T = T2 or T = T3 or T = T4 or T = T5 else
+	--	 '0';
 
 	-- CE# timing.  VRAM fetch and one (SLOW) or two (FAST) CPU accesses
 	-- per machine cycle.
-	nCE <= '1' when IER = '1' else
-	       '0' when fast_cycle and (T = TF or T = T0) else
-	       '0' when not fast_cycle and (T = T0 or T = T1) else
-	       '1' when not is_RAM and not is_COMMON else
-	       not (E_i and not Q_i);
+	--nCE <= '1' when IER = '1' else
+	--       '0' when fast_cycle and (T = TF or T = T0) else
+	--       '0' when not fast_cycle and (T = T0 or T = T1) else
+	--       '1' when not is_RAM and not is_COMMON else
+	--       not (E_i and not Q_i);
 
 	-- CPU data bus gate.  Only enable for writes or while reading from RAM.
 	nGE <= '1' when IER = '1' else
@@ -631,13 +653,13 @@ begin
 	GDIR <= not RnW;
 
 	-- VDG DA0 transition window open for these states.
-	vdg_da0_window <= true when T = TA or T = TB else false;
+	-- vdg_da0_window <= true when T = TA or T = TB else false;
 
 	-- Restart VDG, if stopped
-	vdg_start <= true when T = TB else false;
+	-- vdg_start <= true when T = TB else false;
 	
 	-- Provide video clock signal to synchronise timing
-	VideoLoadClock <= '1' when z_video else '0';
+	-- VideoLoadClock <= '1' when z_video else '0';
 
 	-- This is the main state machine, advanced by BOSC falling edge.
 	-- E and Q timings remain as they are in the original SAM (including
@@ -648,147 +670,24 @@ begin
 	-- Remember that the NEW state set at each clock transition is what you
 	-- should use when cross-referencing with the datasheet.
 
-	process (BOSC)
-	begin
-
-		if falling_edge(BOSC) then
-
-			case T is
-
-				when TF =>
-					T <= T0;
-
-					if fast_cycle then
-						if R = '0' then
-							fast_cycle <= false;
-						else
-							Q_i <= not IER;
-						end if;
-					end if;
-
-				when T0 =>
-					T <= T1;
-
-					IR <= '0';
-
-				when T1 =>
-					T <= T2;
-
-					if fast_cycle then
-						E_i <= not IER;
-					end if;
-
-				when T2 =>
-					T <= T3;
-
-					if fast_cycle then
-						z_cpu <= true;
-					end if;
-					z_video <= false;
-
-					if not fast_cycle then
-						Q_i <= not IER;
-					end if;
-
-				when T3 =>
-					T <= T4;
-
-					if fast_cycle then
-						Q_i <= '0';
-					end if;
-
-				when T4 =>
-					T <= T5;
-
-				when T5 =>
-					T <= T6;
-
-					if fast_cycle then
-						E_i <= '0';
-					end if;
-					z_cpu <= false;
-					if fast_video then
-						z_video <= true;
-					end if;
-
-				when T6 =>
-					T <= T7;
-
-					if not fast_cycle then
-						E_i <= not IER;
-					end if;
-
-				when T7 =>
-					T <= T8;
-
-					if fast_cycle then
-						if R = '0' then
-							fast_cycle <= false;
-						else
-							Q_i <= not IER;
-						end if;
-					end if;
-
-				when T8 =>
-					T <= T9;
-
-				when T9 =>
-					T <= TA;
-
-					if fast_cycle then
-						E_i <= not IER;
-					end if;
-
-				when TA =>
-					T <= TB;
-
-					if not fast_cycle then
-						Q_i <= '0';
-					end if;
-					
-					if VR = '1' then
-						fast_video <= true;
-					else
-						fast_video <= false;
-					end if;
-
-					z_cpu <= true;
-					z_video <= false;
-
-				when TB =>
-					T <= TC;
-
-					if not fast_cycle then
-						if R = '1' then
-							fast_cycle <= true;
-						end if;
-					else
-						Q_i <= '0';
-					end if;
-
-				when TC =>
-					T <= TD;
-
-				when TD =>
-					T <= TE;
-
-					if fast_cycle then
-						E_i <= '0';
-					end if;
-
-					z_cpu <= false;
-					z_video <= true;
-
-				when TE =>
-					T <= TF;
-
-					E_i <= '0';
-
-			end case;
-		end if;
-		
-	end process;
-
+	qclock : Quadrature
+	port map (
+		OSC => BOSC,
+		R => R,
+		VR => VR,
+		Reset => IER,
+		is_COMMON => is_COMMON,
+		is_RAM => is_RAM,
+		VClk => VClk,
+		Q => Q_i,
+		E => E_i,
+		ZCpu => z_cpu,
+		ZVideo => z_video,
+		VideoLoadClock => VideoLoadClock,
+		nRAS0 => nRAS0,
+		nCE => nCE
+	);
+	
 	-- differentiate video data from cpu data
 	-- latch on each cycle where z addressing is dedicated to VDG
 	VD <= D when z_video = true; 
@@ -796,7 +695,7 @@ begin
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Address multiplexer
 
-	mpu_page <= to_integer(unsigned(TASK & A(15 downto 13)));
+	--mpu_page <= to_integer(unsigned(TASK & A(15 downto 13)));
 
 	Z_i(20 downto 13) <=
 		-- VDG
@@ -804,7 +703,7 @@ begin
 		-- MMU disabled
 		"00000" & A(15 downto 13) when z_cpu and MMU_EN = '0' and is_COMMON = false else
 		-- CPU
-		page_map(mpu_page)(7 downto 0) when z_cpu and is_COMMON = false else
+		mpu_page when z_cpu and is_COMMON = false else
 		-- DEFAULT
 		"11111111";
 
@@ -822,9 +721,10 @@ begin
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Reset
 
-	VClk_BOSC_div2_d <= '0' when not vdg_sync_error and BOSC = '1' else '1';
+	--VClk_BOSC_div2_d <= '0' when not vdg_sync_error and BOSC = '1' else '1';
+	VClk_BOSC_div2_d <= '0' when BOSC = '1' else '1';
 
-	VClk_BOSC_div2 : entity div2
+	VClk_BOSC_div2 : vdiv2
 	port map (
 			 clk => VClk_BOSC_div2_d,
 			 q => VClk_BOSC_div2_q,
@@ -833,7 +733,7 @@ begin
 
 	VClk_BOSC_div4_d <= not VClk_BOSC_div2_q;
 
-	VClk_BOSC_div4 : entity div2
+	VClk_BOSC_div4 : vdiv2
 	port map (
 			 clk => VClk_BOSC_div4_d,
 			 q => VClk_BOSC_div4_q,
@@ -842,7 +742,7 @@ begin
 
 	-- Run pixel clock at full oscillator speed, up to VDG to divide this down, not SAM
 	-- suspend for reset only
-	VClk <= '0' when IER = '0' else BOSC;
+	-- VClk <= '0' when IER = '0' else BOSC;
 
 	-- Note: IR defaults to '1' and is permanently set to '0' halfway
 	-- through a machine cycle.
@@ -867,120 +767,14 @@ begin
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- VDG
 
-	-- Synchronisation & clock
-
-	process (DA0, vdg_start)
-	begin
-		if vdg_start then
-			vdg_sync_error <= false;
-		elsif rising_edge(DA0) then
-			if not vdg_da0_window then
-				vdg_sync_error <= true;
-			end if;
-		end if;
-	end process;
-
-	-- VDG address modifier
-
-	--  Mode        Division    Bits cleared
-	--  V2 V1 V0    X   Y       by HS# (low)
-	--  ---------------------------------------
-	--   0  0  0    1   12      B1-B4
-	--   0  0  1    3    1      B1-B3
-	--  ---------------------------------------
-	--   0  1  0    1    3      B1-B4
-	--   0  1  1    2    1      B1-B3
-	--  ---------------------------------------
-	--   1  0  0    1    2      B1-B4
-	--   1  0  1    1    1      B1-B3
-	--  ---------------------------------------
-	--   1  1  0    1    1      B1-B4
-	--   1  1  1    1    1      None (DMA MODE)
-
-	use_ydiv12 <= '1' when V = "000" else '0';
-	use_ydiv3  <= '1' when V = "010" else '0';
-	use_ydiv2  <= '1' when V = "100" else '0';
-	use_ydiv1  <= '1' when V(2 downto 1) = "11" or V(0) = '1' else '0';
-
-	use_xdiv3  <= '1' when V = "001" else '0';
-	use_xdiv2  <= '1' when V = "011" else '0';
-	use_xdiv1  <= '1' when V(2) = '1' or V(0) = '0' else '0';
-
-	is_DMA     <= V = "111";
-
-	clock_b5 <= (use_ydiv12 and ydiv12_out) or (use_ydiv3 and ydiv3_out) or (use_ydiv2 and ydiv2_out) or (use_ydiv1 and B(4));
-	clock_b4 <= (use_xdiv3 and xdiv3_out) or (use_xdiv2 and xdiv2_out) or (use_xdiv1 and B(3));
-
-	-- VDG X dividers - B3 ÷ X -> B4
-
-	xdiv3 : entity div3
+	BCounter : VCAddressCounter
 	port map (
-			 clk => B(3),
-			 q => xdiv3_out,
-			 rst => IER_or_VP
-		 );
-
-	xdiv2 : entity div2
-	port map (
-			 clk => B(3),
-			 q => xdiv2_out,
-			 rst => IER_or_VP
-		 );
-
-	-- B1--B3 clocked by DA0 falling edge
-	--
-	-- B4 clocked by B3 or X divider outputs
-
-	process (DA0, IER_or_VP, HR, is_DMA)
-	begin
-		if IER_or_VP = '1' or (HR = '1' and not is_DMA) then
-			B(3 downto 1) <= (others => '0');
-		elsif falling_edge(DA0) then
-			B(3 downto 1) <= std_logic_vector(unsigned(B(3 downto 1))+1);
-		end if;
-	end process;
-
-	process (clock_b4, IER_or_VP, HR, V(0))
-	begin
-		if IER_or_VP = '1' or (HR = '1' and V(0) = '0') then
-			B(4) <= '0';
-		elsif falling_edge(clock_b4) then
-			B(4) <= not B(4);
-		end if;
-	end process;
-
-	-- VDG Y dividers - B4 ÷ Y -> B5--B18
-
-	ydiv12 : entity div4
-	port map (
-			 clk => ydiv3_out,
-			 q => ydiv12_out,
-			 rst => IER_or_VP
-		 );
-
-	ydiv3 : entity div3
-	port map (
-			 clk => B(4),
-			 q => ydiv3_out,
-			 rst => IER_or_VP
-		 );
-
-	ydiv2 : entity div2
-	port map (
-			 clk => B(4),
-			 q => ydiv2_out,
-			 rst => IER_or_VP
-		 );
-
-	-- B5--B18 clocked by B4 or Y divider outputs
-
-	process (clock_b5, IER_or_VP, F)
-	begin
-		if IER_or_VP = '1' then
-			B(18 downto 5) <= F(18 downto 5);
-		elsif falling_edge(clock_b5) then
-			B(18 downto 5) <= std_logic_vector(unsigned(B(18 downto 5))+1);
-		end if;
-	end process;
+		DA0 => DA0,
+		HR => HR,
+		IER_or_VP => IER_or_VP,
+		V => V,
+		F => F,
+		B => B
+	);
 
 end rtl;
