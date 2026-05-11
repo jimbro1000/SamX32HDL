@@ -155,89 +155,89 @@ module FormatTiming(
 	assign leftpreload = LeftBorderMargin - preloadOffset;
 	assign rightpreload = RightBorderMargin - preloadOffset;
 
-	always @(CRES) begin // very speculatively split into logic on bits per pixel but likely unnecessary...
-		if (CRES == 2'd0) begin
-			case (HRES)
-				3'b101 : begin
-					preloadOffset <= 5'd8; // 640 x 1 pixels wide
-					daResetLimit <= 8'd8;
-				end
-				3'b100 : begin
-					preloadOffset <= 5'd8; // 512 x 1 pixels wide
-					daResetLimit <= 8'd8;
-				end
-				3'b011 : begin
-					preloadOffset <= 5'd16; // 320 x 1 pixels wide
-					daResetLimit <= 8'd16;
-				end
-				default: begin
-					preloadOffset <= 5'd16; // 256 x 1 pixels wide
-					daResetLimit <= 8'd16;
-				end
-			endcase
-		end else if (CRES == 2'd1) begin
-			case (HRES)
-				3'b101 : begin
-					preloadOffset <= 5'd8; // 320 x 1 pixels wide
-					daResetLimit <= 8'd16;
-				end
-				3'b100 : begin
-					preloadOffset <= 5'd8; // 256 x 1 pixels wide
-					daResetLimit <= 8'd16;
-				end
-				3'b011 : begin
-					preloadOffset <= 5'd16; // 160 x 2 pixels wide
-					daResetLimit <= 8'd32;
-				end
-				default: begin
-					preloadOffset <= 5'd16; // 128 x 2 pixels wide
-					daResetLimit <= 8'd32;
-				end
-			endcase
-		end else if (CRES == 2'd2) begin
-			case (HRES)
-				3'b101 : begin
-					preloadOffset <= 5'd8; // 160 x 2 pixels wide
-					daResetLimit <= 8'd32;
-				end
-				3'b100 : begin
-					preloadOffset <= 5'd8; // 128 x 2 pixels wide
-					daResetLimit <= 8'd32;
-				end
-				3'b011 : begin
-					preloadOffset <= 5'd16; // 80 x 4 pixels wide
-					daResetLimit <= 8'd64;
-				end
-				default: begin
-					preloadOffset <= 5'd16; // 64 x 4 pixels wide
-					daResetLimit <= 8'd64;
-				end
-			endcase
-		end else begin // 8BPP
-			case (HRES)
-				3'b111 : begin
-					preloadOffset <= 5'd1; // actually 256 byte width
-					daResetLimit <= 8'd1;
-				end
-				3'b101 : begin
-					preloadOffset <= 5'd8; // 40 x 8 pixels wide
-					daResetLimit <= 8'd64;
-				end
-				3'b011 : begin
-					preloadOffset <= 5'd8; // 32 x 8 pixels wide
-					daResetLimit <= 8'd64;
-				end
-//				7'd40 : begin
-//					preloadOffset <= 5'd16; // 20 x 16 pixels wide
+//	always @(CRES) begin // very speculatively split into logic on bits per pixel but likely unnecessary...
+//		if (VC_EN == 1'b0 && CRES == 2'd0) begin
+//			case (HRES)
+//				3'b101 : begin
+//					preloadOffset <= 5'd8; // 640 x 1 pixels wide
+//					daResetLimit <= 8'd8;
+//				end
+//				3'b100 : begin
+//					preloadOffset <= 5'd8; // 512 x 1 pixels wide
+//					daResetLimit <= 8'd8;
+//				end
+//				3'b011 : begin
+//					preloadOffset <= 5'd16; // 320 x 1 pixels wide
+//					daResetLimit <= 8'd16;
+//				end
+//				default: begin
+//					preloadOffset <= 5'd16; // 256 x 1 pixels wide
+//					daResetLimit <= 8'd16;
+//				end
+//			endcase
+//		end else if (CRES == 2'd1) begin
+//			case (HRES)
+//				3'b101 : begin
+//					preloadOffset <= 5'd8; // 320 x 1 pixels wide
+//					daResetLimit <= 8'd16;
+//				end
+//				3'b100 : begin
+//					preloadOffset <= 5'd8; // 256 x 1 pixels wide
+//					daResetLimit <= 8'd16;
+//				end
+//				3'b011 : begin
+//					preloadOffset <= 5'd16; // 160 x 2 pixels wide
+//					daResetLimit <= 8'd32;
+//				end
+//				default: begin
+//					preloadOffset <= 5'd16; // 128 x 2 pixels wide
+//					daResetLimit <= 8'd32;
+//				end
+//			endcase
+//		end else if (CRES == 2'd2) begin
+//			case (HRES)
+//				3'b101 : begin
+//					preloadOffset <= 5'd8; // 160 x 2 pixels wide
+//					daResetLimit <= 8'd32;
+//				end
+//				3'b100 : begin
+//					preloadOffset <= 5'd8; // 128 x 2 pixels wide
+//					daResetLimit <= 8'd32;
+//				end
+//				3'b011 : begin
+//					preloadOffset <= 5'd16; // 80 x 4 pixels wide
+//					daResetLimit <= 8'd64;
+//				end
+//				default: begin
+//					preloadOffset <= 5'd16; // 64 x 4 pixels wide
+//					daResetLimit <= 8'd64;
+//				end
+//			endcase
+//		end else begin // 8BPP
+//			case (HRES)
+//				3'b111 : begin
+//					preloadOffset <= 5'd1; // actually 256 byte width
+//					daResetLimit <= 8'd1;
+//				end
+//				3'b101 : begin
+//					preloadOffset <= 5'd8; // 40 x 8 pixels wide
+//					daResetLimit <= 8'd64;
+//				end
+//				3'b011 : begin
+//					preloadOffset <= 5'd8; // 32 x 8 pixels wide
+//					daResetLimit <= 8'd64;
+//				end
+////				7'd40 : begin
+////					preloadOffset <= 5'd16; // 20 x 16 pixels wide
+////					daResetLimit <= 8'd128;
+////				end
+//				default: begin
+//					preloadOffset <= 5'd16; // 16 x 16 pixels wide
 //					daResetLimit <= 8'd128;
 //				end
-				default: begin
-					preloadOffset <= 5'd16; // 16 x 16 pixels wide
-					daResetLimit <= 8'd128;
-				end
-			endcase
-		end
-	end
+//			endcase
+//		end
+//	end
 	
 	initial begin
 	   u_da0 = 1'b1;

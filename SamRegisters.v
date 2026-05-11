@@ -26,8 +26,8 @@ module SamRegisters(
 	output FMT,
 	output BP,
 	output BPI,
-	output reg [7:0] page,
-	output reg [127:0] PDEF
+	output reg [7:0] page//,
+	//output reg [127:0] PDEF
 );
 
 	wire is_FFxx;
@@ -50,7 +50,7 @@ module SamRegisters(
 	assign is_FFBx    = (A[15:4] == 12'b111111111011) ? 1'b1 : 1'b0; // FFBx ONLY
 	assign is_SAM_REG = (A[15:5] == 11'b11111111110) ? 1'b1 : 1'b0;  // FFCx and FFDx
 	
-	assign VC = INIT0[7];
+	assign VC = 1'b1; //INIT0[7];
 	assign MMU_EN = INIT0[6];
 	assign FMT = ~H50;
 	assign BP = VMODE[7];
@@ -168,26 +168,26 @@ module SamRegisters(
 						4'b1111: page_map_array[15] <= D;
 //						default: ;
 					endcase
-				end else if (is_FFBx == 1'b1) begin
-					case (A[3:0])
-						4'b0000: PDEF[7:0] <= D;
-						4'b0001: PDEF[15:8] <= D;
-						4'b0010: PDEF[23:16] <= D;
-						4'b0011: PDEF[31:24] <= D;
-						4'b0100: PDEF[39:32] <= D;
-						4'b0101: PDEF[47:40] <= D;
-						4'b0110: PDEF[55:48] <= D;
-						4'b0111: PDEF[63:56] <= D;
-						4'b1000: PDEF[71:64] <= D;
-						4'b1001: PDEF[79:72] <= D;
-						4'b1010: PDEF[87:80] <= D;
-						4'b1011: PDEF[95:88] <= D;
-						4'b1100: PDEF[103:96] <= D;
-						4'b1101: PDEF[111:104] <= D;
-						4'b1110: PDEF[119:112] <= D;
-						4'b1111: PDEF[127:120] <= D;
-//						default: ;
-					endcase
+//				end else if (is_FFBx == 1'b1) begin
+//					case (A[3:0])
+//						4'b0000: PDEF[7:0] <= D;
+//						4'b0001: PDEF[15:8] <= D;
+//						4'b0010: PDEF[23:16] <= D;
+//						4'b0011: PDEF[31:24] <= D;
+//						4'b0100: PDEF[39:32] <= D;
+//						4'b0101: PDEF[47:40] <= D;
+//						4'b0110: PDEF[55:48] <= D;
+//						4'b0111: PDEF[63:56] <= D;
+//						4'b1000: PDEF[71:64] <= D;
+//						4'b1001: PDEF[79:72] <= D;
+//						4'b1010: PDEF[87:80] <= D;
+//						4'b1011: PDEF[95:88] <= D;
+//						4'b1100: PDEF[103:96] <= D;
+//						4'b1101: PDEF[111:104] <= D;
+//						4'b1110: PDEF[119:112] <= D;
+//						4'b1111: PDEF[127:120] <= D;
+////						default: ;
+//					endcase
 				end else if (is_FF3x == 1'b1) begin
 					case (A[3:0])
 						4'b1000: F[18:13] <= D[5:0];

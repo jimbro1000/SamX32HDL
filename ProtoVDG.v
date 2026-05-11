@@ -8,7 +8,7 @@ module ProtoVDG(
 	Format,
 	GM,
 	Inv,
-	PaletteDef,
+	//PaletteDef,
 	AlphaRow,
 	AlphaCode,
 	DA0,
@@ -35,7 +35,7 @@ module ProtoVDG(
 	input Format;
 	input [2:0] GM;
 	input Inv;
-	input [127:0] PaletteDef;
+	//input [127:0] PaletteDef;
 	input VC_EN;
 	input [1:0] CRES;
 	input [1:0] LPF;
@@ -230,7 +230,7 @@ module ProtoVDG(
 							.VC(VC_EN),
 							.backporch(blank),
 							.viewportActive(viewportActive),
-							.PaletteDef(PaletteDef),
+							//.PaletteDef(PaletteDef),
 							.Border(BRDR),
                      .RGB(RGB)
 						);

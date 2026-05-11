@@ -81,7 +81,7 @@ module SAMx32(
 		.DA0 (DA0),
 		.nHS (HSn),
 		.VC_EN (VCE),
-		.PDEF (Palette),
+		//.PDEF (Palette),
 		.CRES (CRES),
 		.LPR (LPR),
 		.LPF (LPF),
@@ -120,7 +120,7 @@ module SAMx32(
 		.BP (BP),
 		.HRES (HRES),
 		.BRDR (BRDR),
-		.PaletteDef (Palette),
+		//.PaletteDef (Palette),
 		.VideoLoadClock (VLC),
 		.VR(VR)
 	);
