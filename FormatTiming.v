@@ -70,10 +70,10 @@ module FormatTiming(
 	reg [3:0] alphaRowCounter;
 	
 	// horizontal
-	parameter leftSync = 11'd56; //14; // 4us duration
-	parameter leftMargin = 11'd112; //28; // 12us duration //42
+	parameter leftSync = 11'd57; //14; // 4us duration
+	parameter leftMargin = 11'd171; //28; // 12us duration //42
 	parameter rightMargin = 11'd892; //223; // suggested 8 cycles of front porch //225
-	parameter allcols = 11'd908; //227; // 64us duration (63.55 at 3.57MHz x 227 / 63.9 at 14.32MHz x 916 )
+	parameter allcols = 11'd916; //227; // 64us duration (63.55 at 3.57MHz x 227 / 63.9 at 14.32MHz x 916 )
 	// vertical
 	parameter vsync = 9'd7;
 	// best = 7, 20, 95, 287, 311
@@ -241,11 +241,13 @@ module FormatTiming(
 	
 	initial begin
 	   u_da0 = 1'b1;
-		colCounter = 0;
-		lineCounter = 0;
+		colCounter = 11'd0;
+		lineCounter = 9'd0;
 		Clk3 = 0;
 		alphaRowCounter = 0;
 		daCount = 7'd0;
+		HSn <= 1'b0;
+		FSn <= 1'b0;
 	end
 
 	// vertical sync active low

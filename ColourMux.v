@@ -43,7 +43,7 @@ module ColourMux(
 	// !sel1 & !sel2 = colour3
 	// anything else must be a border
 	assign Colour = backporch ? 4'b1111 : viewportActive ? Sel1 ? Colour1 : Sel2 ? Colour2 : Colour3 : Colour4;
-
+	
 	always @(clk) begin
 //		if (!backporch & viewportActive & !Sel1 & !Sel2 & !VC) begin
 //			case (Colour)
@@ -81,9 +81,9 @@ module ColourMux(
 //					RGB = {PaletteDef[127],PaletteDef[125],PaletteDef[122],1'b0,PaletteDef[126],PaletteDef[124],PaletteDef[121],1'b0,PaletteDef[123],PaletteDef[120],2'b00};
 //			endcase
 //		end else begin
-			if (!backporch & !viewportActive & !VC) begin // use border definition
-				RGB = {Border[7],Border[5],Border[2],1'b0,Border[6],Border[4],Border[1],1'b0,Border[3],Border[0],2'b00};
-			end else // use compatible palette
+//			if (!backporch & !viewportActive & !VC) begin // use border definition
+//				RGB = {Border[7],Border[5],Border[2],1'b0,Border[6],Border[4],Border[1],1'b0,Border[3],Border[0],2'b00};
+//			end else // use compatible palette
 				case (Colour)
 					4'b0000:
 						RGB = 12'b000000000000; // almost black

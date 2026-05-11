@@ -50,7 +50,7 @@ module SamRegisters(
 	assign is_FFBx    = (A[15:4] == 12'b111111111011) ? 1'b1 : 1'b0; // FFBx ONLY
 	assign is_SAM_REG = (A[15:5] == 11'b11111111110) ? 1'b1 : 1'b0;  // FFCx and FFDx
 	
-	assign VC = 1'b1; //INIT0[7];
+	assign VC = INIT0[7];
 	assign MMU_EN = INIT0[6];
 	assign FMT = ~H50;
 	assign BP = VMODE[7];
@@ -63,6 +63,13 @@ module SamRegisters(
 	assign CRES = VRES[1:0];
 	assign HVEN = HOR[7];
 	assign X = HOR[6:0];
+	
+	initial begin
+		INIT0 <= 8'b11000000;
+		VMODE <= 8'b00001000;
+		VRES <= 6'b0000000;
+		HOR <= 8'b00000000;
+	end
 	
 	always @(negedge clk) begin
 		if (MMU_EN == 1'b1)

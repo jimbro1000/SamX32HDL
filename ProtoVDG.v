@@ -69,14 +69,14 @@ module ProtoVDG(
 	wire viewportActive;
 	wire blank;
 
-	parameter forceMode = 1'b0;
-	parameter forceAlpha = 1'b0;
+	parameter forceMode = 1'b1;
+	parameter forceAlpha = 1'b1;
 	parameter forceGM = 3'd6;
-	parameter forceCSS = 1'b1;
+	parameter forceCSS = 1'b0;
 	parameter forceSG = 1'b0;
 	parameter forceFormat = 1'b0;
 	parameter forceInv = 1'b0;
-	parameter forceData = 8'd33;
+	parameter forceData = 8'h1E; // 4 colours in bitmap mode
 
 	wire useAlpha;
 	wire [2:0] useGM;
@@ -89,7 +89,7 @@ module ProtoVDG(
 	assign useAlpha = forceMode ? forceAlpha : AnG;
 	assign useGM = forceMode ? forceGM : GM;
 	assign useCSS = forceMode ? forceCSS : Css;
-	assign useAnS = forceMode ? forceSG : AnS; //useData[7];
+	assign useAnS = useData[7]; //forceMode ? forceSG : useData[7];
 	assign useInv = forceMode ? forceInv : Inv;
 	assign useFormat = forceMode ? forceFormat : Format;
 	assign useData = forceMode ? forceData : Data;

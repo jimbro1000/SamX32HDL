@@ -38,7 +38,7 @@ module SAMx32(
 //	wire CSS;         // Colour set select
 //	wire [2:0] GM;    // Graphic mode selector
 	wire VCE;         // Video Compatible Mode Enable
-	wire [127:0] Palette; // 16x8 palette table
+//	wire [127:0] Palette; // 16x8 palette table
 	wire [1:0] CRES;  // Bits per pixel (1/2/4/8)
 	wire [2:0] LPR;   // Lines per row
 	wire [1:0] LPF;   // Lines per field
