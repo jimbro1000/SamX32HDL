@@ -37,7 +37,7 @@
 
 
 set_global_assignment -name FAMILY "MAX II"
-set_global_assignment -name DEVICE EPM570T144C5
+set_global_assignment -name DEVICE EPM1270T144C5
 set_global_assignment -name TOP_LEVEL_ENTITY SAMx32
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION "13.0 SP1"
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:14:10  MARCH 19, 2026"
