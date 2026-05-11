@@ -505,7 +505,17 @@ architecture rtl of samx is
 		B : OUT STD_LOGIC_VECTOR(18 downto 1)
 	);
 	END COMPONENT;
-		
+	
+	COMPONENT DeviceSelect
+	PORT (
+		clk : IN STD_LOGIC;
+		TY : IN STD_LOGIC;
+		A : IN STD_LOGIC_VECTOR(15 downto 0);
+		COMMON : IN STD_LOGIC_VECTOR(1 downto 0);
+		S : OUT STD_LOGIC_VECTOR(2 downto 0)
+	);
+	END COMPONENT;
+	
 begin
 
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -513,66 +523,54 @@ begin
 
 	-- IO, SAM registers, IRQ vectors
 	is_FFxx    <= A(15 downto 8) = "11111111";
-	is_IO0     <= is_FFxx and A(7 downto 5) = "000";   -- FF0x and FF1x
-	is_IO1     <= is_FFxx and A(7 downto 4) = "0010";  -- FF2x ONLY
+--	is_IO0     <= is_FFxx and A(7 downto 5) = "000";   -- FF0x and FF1x
+--	is_IO1     <= is_FFxx and A(7 downto 4) = "0010";  -- FF2x ONLY
 --	is_FF3x    <= is_FFxx and A(7 downto 4) = "0011";  -- FF3x ONLY
-	is_IO2     <= is_FFxx and A(7 downto 5) = "010";   -- FF4x and FF5x
+--	is_IO2     <= is_FFxx and A(7 downto 5) = "010";   -- FF4x and FF5x
 --	is_FF9x    <= is_FFxx and A(7 downto 4) = "1001";  -- FF9x ONLY
 --	is_FFAx    <= is_FFxx and A(7 downto 4) = "1010";  -- FFAx ONLY
 --	is_FFBx    <= is_FFxx and A(7 downto 4) = "1011";  -- FFBx ONLY
 	--is_FFDx    <= is_FFxx and A(7 downto 4) = "1101";  -- FFDx ONLY
 --	is_SAM_REG <= is_FFxx and A(7 downto 5) = "110";   -- FFCx and FFDx
-	is_IRQ_VEC <= is_FFxx and A(7 downto 5) = "111";   -- FFEx and FFFx
+--	is_IRQ_VEC <= is_FFxx and A(7 downto 5) = "111";   -- FFEx and FFFx
 
-	-- Upper 32K
-	is_COMMON0 <= COMMON(0) = '1' and A(15 downto 12) = "1111";
-	is_COMMON1 <= COMMON(1) = '1' and A(15 downto 12) = "1110";
-	is_COMMON  <= (is_COMMON0 or is_COMMON1) and (is_IRQ_VEC or not is_FFxx);
-	is_ROM0 <= TY = '0' and A(15 downto 13) = "100";
-	is_ROM1 <= TY = '0' and A(15 downto 13) = "101";
-	is_ROM2 <= TY = '0' and A(15 downto 14) = "11" and not is_FFxx;
+--	-- Upper 32K
+--	is_COMMON0 <= COMMON(0) = '1' and A(15 downto 12) = "1111";
+--	is_COMMON1 <= COMMON(1) = '1' and A(15 downto 12) = "1110";
+--	is_COMMON  <= (is_COMMON0 or is_COMMON1) and (is_IRQ_VEC or not is_FFxx);
+--	is_ROM0 <= TY = '0' and A(15 downto 13) = "100";
+--	is_ROM1 <= TY = '0' and A(15 downto 13) = "101";
+--	is_ROM2 <= TY = '0' and A(15 downto 14) = "11" and not is_FFxx;
 
 	-- RAM
 	is_RAM  <= A(15) = '0' or (TY = '1' and not is_FFxx);
 	
-	S <= -- IO, SAM registers, IRQ vectors
-	     "100" when is_IO0 else
-	     "101" when is_IO1 else
-	     "110" when is_IO2 else
-	     -- RAM for COMMON:
-	     "000" when is_COMMON else
-	     -- ROM1 for IRQ vectors:
-	     "010" when is_IRQ_VEC else
-	     "111" when is_FFxx else
-	     -- Upper 32K in map type 0:
-	     "001" when is_ROM0 else
-	     "010" when is_ROM1 else
-	     "011" when is_ROM2 else
-	     -- RAM
-	     "000";
-
+--	S <= -- IO, SAM registers, IRQ vectors
+--	     "100" when is_IO0 else
+--	     "101" when is_IO1 else
+--	     "110" when is_IO2 else
+--	     -- RAM for COMMON:
+--	     "000" when is_COMMON else
+--	     -- ROM1 for IRQ vectors:
+--	     "010" when is_IRQ_VEC else
+--	     "111" when is_FFxx else
+--	     -- Upper 32K in map type 0:
+--	     "001" when is_ROM0 else
+--	     "010" when is_ROM1 else
+--	     "011" when is_ROM2 else
+--	     -- RAM
+--	     "000";
 		  
+	devices : DeviceSelect
+	port map (
+		clk => BOSC,
+		TY => TY,
+		A => A,
+		COMMON => COMMON,
+		S => S
+	);
 
 	-- ADVANCED SAM FEATURES (based on CoCo3 GIME)
-		  
---	VC <= INIT0(7);
---	MMU_EN <= INIT0(6);
---		  
---	FMT <= not H50;
---	BP <= VMODE(7);
---	BPI <= VMODE(5);
---	MOCH <= VMODE(4);
---	H50 <= VMODE(3);
---	LPR <= VMODE(2 downto 0);
---	
---	LPF <= VRES(6 downto 5);
---	HRES <= VRES(4 downto 2);
---	CRES <= VRES(1 downto 0);
---	
---	HVEN <= HOR(7);
---	X <= HOR(6 downto 0);
---	
---	VC_EN <= VC;
 
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- -- Registers
