@@ -25,14 +25,12 @@ module FormatTiming(
 	input Clk,
 	input VC_EN,
 	input BP,
-	input [6:0] BytesPerRow,
-	input [10:0] LeftBorderMargin,
-	input [10:0] RightBorderMargin,
-	input [8:0] AllRows,
-	input [8:0] TopBlank,
+	input [2:0] HRES,
+	input [8:0] LeftBorderMargin,
+	input [8:0] RightBorderMargin,
 	input [8:0] TopMargin,
 	input [8:0] BottomMargin,
-	input [2:0] BPP,
+	input [1:0] CRES,
 	input VideoLoadClock,
 	output PixelClk,
 	output reg HSn,
@@ -47,15 +45,17 @@ module FormatTiming(
 	reg activeRow;
 	wire [8:0] frameTopRow;
 	wire [8:0] frameBottomRow;
-	wire [8:0] frameAllRows;
-	wire [8:0] frameVBlank;
-	wire [8:0] frameVSync;
 	wire [10:0] leftpreload;
 	wire [10:0] rightpreload;
+	wire [10:0] LeftBorder;
+	wire [10:0] RightBorder;
 	wire slowMode;
 	reg u_da0;
 	reg hBlank;
 	reg vBlank;
+	
+	assign LeftBorder = {LeftBorderMargin, 2'b00};
+	assign RightBorder = {RightBorderMargin, 2'b00};
 
 	// horizontal beam counter using gclk for frame timing accuracy
 	reg [10:0] colCounter;
@@ -73,7 +73,7 @@ module FormatTiming(
 	parameter leftSync = 11'd56; //14; // 4us duration
 	parameter leftMargin = 11'd112; //28; // 12us duration //42
 	parameter rightMargin = 11'd892; //223; // suggested 8 cycles of front porch //225
-	parameter allcols = 11'd916; //227; // 64us duration (63.55 at 3.57MHz x 227 / 63.9 at 14.32MHz x 916 )
+	parameter allcols = 11'd908; //227; // 64us duration (63.55 at 3.57MHz x 227 / 63.9 at 14.32MHz x 916 )
 	// vertical
 	parameter vsync = 9'd7;
 	// best = 7, 20, 95, 287, 311
@@ -88,16 +88,16 @@ module FormatTiming(
 			HSn <= 1'b0;
 			hBlank <= 1'b1;
 			daCountEnable <= 1'b0;
-			if (lineCounter == frameAllRows) begin
+			if (lineCounter == (FrameFormat == 1'b1 ? 9'd258 : 9'd311)) begin
 				lineCounter <= 0;
 				FSn <= 1'b0;
 				vBlank <= 1'b1;
 			end else begin
 				// logic will deliberately fall through
 				lineCounter <= lineCounter + 9'd1;
-				if (lineCounter == frameVSync)
+				if (lineCounter == vsync)
 					FSn <= 1'b1;
-				if (lineCounter == frameVBlank)
+				if (lineCounter == (FrameFormat == 1'b1 ? 9'd32 : 9'd57))
 					vBlank <= 1'b0;
 				if (lineCounter == frameTopRow)
 					activeRow <= 1'b1;
@@ -121,9 +121,9 @@ module FormatTiming(
 				daCountEnable <= 1'b1;
 			if (activeRow && colCounter == rightpreload)
 				daCountEnable <= 1'b0;
-			if (activeRow && colCounter == LeftBorderMargin)
+			if (activeRow && colCounter == LeftBorder)
 				active <= 1'b1;
-			if (activeRow && colCounter == RightBorderMargin)
+			if (activeRow && colCounter == RightBorder)
 				active <= 1'b0;
 		end
 
@@ -155,18 +155,18 @@ module FormatTiming(
 	assign leftpreload = LeftBorderMargin - preloadOffset;
 	assign rightpreload = RightBorderMargin - preloadOffset;
 
-	always @(BPP) begin // very speculatively split into logic on bits per pixel but likely unnecessary...
-		if (BPP == 3'd1) begin
-			case (BytesPerRow)
-				7'd80 : begin
+	always @(CRES) begin // very speculatively split into logic on bits per pixel but likely unnecessary...
+		if (CRES == 2'd0) begin
+			case (HRES)
+				3'b101 : begin
 					preloadOffset <= 5'd8; // 640 x 1 pixels wide
 					daResetLimit <= 8'd8;
 				end
-				7'd64 : begin
+				3'b100 : begin
 					preloadOffset <= 5'd8; // 512 x 1 pixels wide
 					daResetLimit <= 8'd8;
 				end
-				7'd40 : begin
+				3'b011 : begin
 					preloadOffset <= 5'd16; // 320 x 1 pixels wide
 					daResetLimit <= 8'd16;
 				end
@@ -175,17 +175,17 @@ module FormatTiming(
 					daResetLimit <= 8'd16;
 				end
 			endcase
-		end else if (BPP == 3'd2) begin
-			case (BytesPerRow)
-				7'd80 : begin
+		end else if (CRES == 2'd1) begin
+			case (HRES)
+				3'b101 : begin
 					preloadOffset <= 5'd8; // 320 x 1 pixels wide
 					daResetLimit <= 8'd16;
 				end
-				7'd64 : begin
+				3'b100 : begin
 					preloadOffset <= 5'd8; // 256 x 1 pixels wide
 					daResetLimit <= 8'd16;
 				end
-				7'd40 : begin
+				3'b011 : begin
 					preloadOffset <= 5'd16; // 160 x 2 pixels wide
 					daResetLimit <= 8'd32;
 				end
@@ -194,17 +194,17 @@ module FormatTiming(
 					daResetLimit <= 8'd32;
 				end
 			endcase
-		end else if (BPP == 3'd4) begin
-			case (BytesPerRow)
-				7'd80 : begin
+		end else if (CRES == 2'd2) begin
+			case (HRES)
+				3'b101 : begin
 					preloadOffset <= 5'd8; // 160 x 2 pixels wide
 					daResetLimit <= 8'd32;
 				end
-				7'd64 : begin
+				3'b100 : begin
 					preloadOffset <= 5'd8; // 128 x 2 pixels wide
 					daResetLimit <= 8'd32;
 				end
-				7'd40 : begin
+				3'b011 : begin
 					preloadOffset <= 5'd16; // 80 x 4 pixels wide
 					daResetLimit <= 8'd64;
 				end
@@ -214,23 +214,23 @@ module FormatTiming(
 				end
 			endcase
 		end else begin // 8BPP
-			case (BytesPerRow)
-				7'd0 : begin
+			case (HRES)
+				3'b111 : begin
 					preloadOffset <= 5'd1; // actually 256 byte width
 					daResetLimit <= 8'd1;
 				end
-				7'd80 : begin
+				3'b101 : begin
 					preloadOffset <= 5'd8; // 40 x 8 pixels wide
 					daResetLimit <= 8'd64;
 				end
-				7'd64 : begin
+				3'b011 : begin
 					preloadOffset <= 5'd8; // 32 x 8 pixels wide
 					daResetLimit <= 8'd64;
 				end
-				7'd40 : begin
-					preloadOffset <= 5'd16; // 20 x 16 pixels wide
-					daResetLimit <= 8'd128;
-				end
+//				7'd40 : begin
+//					preloadOffset <= 5'd16; // 20 x 16 pixels wide
+//					daResetLimit <= 8'd128;
+//				end
 				default: begin
 					preloadOffset <= 5'd16; // 16 x 16 pixels wide
 					daResetLimit <= 8'd128;
@@ -261,8 +261,5 @@ module FormatTiming(
 	assign PixelClk = slowMode ? Clk3 : Clk;
 	assign frameTopRow = TopMargin; //FrameFormat ? toprow2 : toprow; // FrameFormat 0=PAL/1=NTSC
 	assign frameBottomRow = BottomMargin; //FrameFormat ? bottomrow2 : bottomrow;
-	assign frameAllRows = AllRows; //FrameFormat ? allrows2 : allrows;
-	assign frameVBlank = TopBlank; //FrameFormat ? topBlank2 : topBlank;
-	assign frameVSync = vsync; //FrameFormat ? vsync2 : vsync;
 
 endmodule

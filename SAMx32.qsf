@@ -177,3 +177,4 @@ set_global_assignment -name VERILOG_FILE vdiv3.v
 set_global_assignment -name VERILOG_FILE vdiv4.v
 set_global_assignment -name VERILOG_FILE VCAddressCounter.v
 set_global_assignment -name VERILOG_FILE DeviceSelect.v
+set_global_assignment -name VERILOG_FILE vsamx.v

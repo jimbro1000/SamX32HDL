@@ -1,7 +1,7 @@
 module VCAddressCounter(
 	input [2:0] V,
 	input DA0,
-	input [18:5] F,
+	input [18:3] F,
 	input HR,
 	input IER_or_VP,
 	output reg [18:1] B
