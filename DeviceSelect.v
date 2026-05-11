@@ -21,7 +21,7 @@ module DeviceSelect(
 	assign is_IO1 = (is_FFxx & A[7:4] == 4'b0010);
 	assign is_IO2 = (is_FFxx & A[7:5] == 3'b010);
 	assign is_SAM = (is_FFxx & A[7:5] == 3'b110);
-	assign is_IRQ = (is_FFxx & A[7:5] == 3'b111);
+	assign is_IRQ = (is_FFxx & A[7:4] == 4'b1111);
 	assign is_COMMON0 = (COMMON[0] == 1'b1 & A[15:12] == 4'b1111);
 	assign is_COMMON1 = (COMMON[1] == 1'b1 & A[15:12] == 4'b1110);
 	assign is_COMMON = ((is_COMMON0 | is_COMMON1) & (is_IRQ | ~is_FFxx));
@@ -61,6 +61,8 @@ module DeviceSelect_testbench();
 	reg TY;
 	reg [1:0] COMMON;
 	wire [2:0] S;
+	
+	integer i;
 
 	DeviceSelect uut (
 		.clk(clk),
@@ -76,7 +78,9 @@ module DeviceSelect_testbench();
 		COMMON <= 2'b00;
 		A <= 16'd65535;
 		
-		#100 A <= 16'b0000000000000000; // start lower ram
+		for (i = 0; i < 4; i = i + 1) begin
+		
+		#100 TY <= 1'b0; A <= 16'b0000000000000000; // start lower ram
 		#100 A <= 16'b0111111111111111; // end lower ram
 		#100 A <= 16'b1000000000000000; // rom 0
 		#100 A <= 16'b1001111111111111; // end rom 0
@@ -94,6 +98,28 @@ module DeviceSelect_testbench();
 		#100 A <= 16'hffef; // end sam
 		#100 A <= 16'hfff0; // irq
 		#100 A <= 16'hffff; // end irq
+		
+		#100 TY <= 1'b1; A <= 16'b0000000000000000; // start lower ram
+		#100 A <= 16'b0111111111111111; // end lower ram
+		#100 A <= 16'b1000000000000000; // rom 0
+		#100 A <= 16'b1001111111111111; // end rom 0
+		#100 A <= 16'b1010000000000000; // rom 1
+		#100 A <= 16'b1011111111111111; // end rom 1
+		#100 A <= 16'b1100000000000000; // rom 2
+		#100 A <= 16'hfeff; // end rom 2
+		#100 A <= 16'hff00; // io 0
+		#100 A <= 16'hff1f; // end io 0
+		#100 A <= 16'hff20; // io 1
+		#100 A <= 16'hff3f; // end io 1
+		#100 A <= 16'hff40; // io 2
+		#100 A <= 16'hff5f; // end io 2
+		#100 A <= 16'hff60; // sam
+		#100 A <= 16'hffef; // end sam
+		#100 A <= 16'hfff0; // irq
+		#100 A <= 16'hffff; // end irq
+		
+		#50 COMMON <= COMMON + 2'b01;
+		end
 	end
 	
 	always begin
