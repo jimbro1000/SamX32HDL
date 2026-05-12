@@ -37,7 +37,7 @@
 
 
 set_global_assignment -name FAMILY "MAX II"
-set_global_assignment -name DEVICE EPM1270T144C5
+set_global_assignment -name DEVICE EPM570T144C5
 set_global_assignment -name TOP_LEVEL_ENTITY SAMx32
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION "13.0 SP1"
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:14:10  MARCH 19, 2026"
@@ -105,18 +105,18 @@ set_location_assignment PIN_106 -to S[1]
 set_location_assignment PIN_67 -to WEn
 set_location_assignment PIN_21 -to Format
 set_location_assignment PIN_105 -to S[0]
-set_location_assignment PIN_1 -to RGBout[11]
-set_location_assignment PIN_2 -to RGBout[10]
-set_location_assignment PIN_3 -to RGBout[9]
-set_location_assignment PIN_4 -to RGBout[8]
+set_location_assignment PIN_11 -to RGBout[11]
+set_location_assignment PIN_12 -to RGBout[10]
+set_location_assignment PIN_13 -to RGBout[9]
+set_location_assignment PIN_14 -to RGBout[8]
 set_location_assignment PIN_5 -to RGBout[7]
 set_location_assignment PIN_6 -to RGBout[6]
 set_location_assignment PIN_7 -to RGBout[5]
 set_location_assignment PIN_8 -to RGBout[4]
-set_location_assignment PIN_11 -to RGBout[3]
-set_location_assignment PIN_12 -to RGBout[2]
-set_location_assignment PIN_13 -to RGBout[1]
-set_location_assignment PIN_14 -to RGBout[0]
+set_location_assignment PIN_1 -to RGBout[3]
+set_location_assignment PIN_2 -to RGBout[2]
+set_location_assignment PIN_3 -to RGBout[1]
+set_location_assignment PIN_4 -to RGBout[0]
 set_location_assignment PIN_18 -to OSCin
 set_location_assignment PIN_108 -to Q
 set_location_assignment PIN_109 -to E

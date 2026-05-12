@@ -30,20 +30,27 @@ module ColourMap(
 		if (AnG) begin
 			case (Mode)
 				3'b000, 3'b010, 3'b100, 3'b110:
-					if (Css)
-						Colour <= ({2'b00,Pixel}) + 4'b0101; // 4 colour green set
-					else
-						Colour <= ({2'b00,Pixel}) + 4'b0001; // 4 colour white set
+					case ({Css,Pixel})
+						3'b000 : Colour <= 4'b0001;
+						3'b001 : Colour <= 4'b0010;
+						3'b010 : Colour <= 4'b0011;
+						3'b011 : Colour <= 4'b0100;
+						3'b100 : Colour <= 4'b0101;
+						3'b101 : Colour <= 4'b0110;
+						3'b110 : Colour <= 4'b0111;
+						3'b111 : Colour <= 4'b1000;
+					endcase
 				default:
 					if (Css)
 						if (Pixel == 2'b00)
 							Colour <= 4'b0000; //black
 						else
 							Colour <= 4'b0101; //white
-					else if (Pixel == 2'b00)
-						Colour <= 4'b1010; //dark green
-					else
-						Colour <= 4'b0001; //green
+					else 
+						if (Pixel == 2'b00)
+							Colour <= 4'b1010; //dark green
+						else
+							Colour <= 4'b0001; //green
 			endcase
 		end else begin
 			if (Css)

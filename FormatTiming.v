@@ -71,7 +71,7 @@ module FormatTiming(
 	
 	// horizontal
 	parameter leftSync = 11'd57; //14; // 4us duration
-	parameter leftMargin = 11'd171; //28; // 12us duration //42
+	parameter leftMargin = 11'd114; //28; // 12us duration //42
 	parameter rightMargin = 11'd892; //223; // suggested 8 cycles of front porch //225
 	parameter allcols = 11'd916; //227; // 64us duration (63.55 at 3.57MHz x 227 / 63.9 at 14.32MHz x 916 )
 	// vertical
@@ -97,7 +97,7 @@ module FormatTiming(
 				lineCounter <= lineCounter + 9'd1;
 				if (lineCounter == vsync)
 					FSn <= 1'b1;
-				if (lineCounter == (FrameFormat == 1'b1 ? 9'd32 : 9'd57))
+				if (lineCounter == (FrameFormat == 1'b1 ? 9'd30 : 9'd55))
 					vBlank <= 1'b0;
 				if (lineCounter == frameTopRow)
 					activeRow <= 1'b1;
@@ -132,10 +132,10 @@ module FormatTiming(
 			daCount <= 7'd0;
 			if (daCountEnable == 1'b1)
 				u_da0 <= ~u_da0;
-			else if (HSn)
+			else if (HSn == 1'b0)
 				u_da0 <= 1'b0;
 		end
-		Load = slowMode ? colCounter[2:0] == 3'd1 : colCounter[1:0] == 2'd1;
+		Load = slowMode == 1'b1 ? colCounter[4:0] == 5'd0 : colCounter[3:0] == 4'd0;
 	end
 	
 	reg Clk3;
