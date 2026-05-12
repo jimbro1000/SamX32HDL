@@ -44,7 +44,7 @@ module RawShift(
 			offset <= offset - 2'd1;
 	end
 	
-	always @(PClk) begin
+	always @(Clk) begin
 		if (Divider == 0)
 			Pixel <= {1'b0,pixelData[{offset, PClk}]};
 		else
