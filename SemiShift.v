@@ -28,8 +28,15 @@ module SemiShift(
 
 	reg [7:0] pixelData;
 	reg [1:0] offset;
-
-	always @(negedge Clk) begin
+	wire PClk;
+	
+	vdiv4 slowclock(
+		.clk(Clk),
+		.rst(1'b0),
+		.q(PClk)
+	);
+	
+	always @(negedge PClk) begin
 		if (Load)
 			offset <= 2'b11;
 		else

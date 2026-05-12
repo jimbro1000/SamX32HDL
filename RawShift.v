@@ -28,8 +28,15 @@ module RawShift(
 
 	reg [7:0] pixelData;
 	reg [1:0] offset;
+	wire PClk;
 	
-	always @(negedge Clk) begin
+	vdiv4 slowclock(
+		.clk(Clk),
+		.rst(1'b0),
+		.q(PClk)
+	);
+	
+	always @(negedge PClk) begin
 		if (Load)
 			offset <= 2'b11;
 		else
@@ -40,9 +47,9 @@ module RawShift(
 		pixelData <= Data;
 	end
 	
-	always @(Clk) begin
-		if (Divider == 0)
-			Pixel <= {1'b0,pixelData[{offset, Clk}]};
+	always @(PClk) begin
+		if (Divider == 1'b0)
+			Pixel <= {1'b0,pixelData[{offset, PClk}]};
 		else
 			case (offset)
 				2'b11:
