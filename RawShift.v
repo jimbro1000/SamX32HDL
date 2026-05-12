@@ -37,7 +37,7 @@ module RawShift(
 	);
 	
 	always @(negedge PClk) begin
-		if (Load) begin
+		if (Load == 1'b1) begin
 			pixelData <= Data;
 			offset <= 2'b11;
 		end else
@@ -45,7 +45,7 @@ module RawShift(
 	end
 	
 	always @(Clk) begin
-		if (Divider == 0)
+		if (Divider == 1'b0)
 			Pixel <= {1'b0,pixelData[{offset, PClk}]};
 		else
 			case (offset)

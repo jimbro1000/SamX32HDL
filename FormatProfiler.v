@@ -19,8 +19,8 @@ module FormatProfiler (
 initial begin
 	// default to PAL alpha
 	// hsync = 57 // backporch = 114 // left border = 231 // right border = 743
-	LeftMargin <= 9'd67; //231 / 4 = 58;
-	RightMargin <= 9'd195; //743 / 4 = 186;
+	LeftMargin <= 9'd64; //231 / 4 = 58;
+	RightMargin <= 9'd192; //743 / 4 = 186;
 //	AllRows <= 9'd311;
 //	TopBlank <= 9'd57;
 	TopMargin <= 9'd84;
@@ -37,8 +37,8 @@ always @(negedge clk) begin
 //		TopBlank <= 9'd57;
 //	end
 ////	if (VC_EN == 1'b1) begin // compatibility mode
-		LeftMargin <= 9'd67;
-		RightMargin <= 9'd195;
+		LeftMargin <= 9'd64;
+		RightMargin <= 9'd192;
 		if (format == 1'b1) begin // ntsc
 			TopMargin <= 9'd45;
 			BottomMargin <= 9'd237;

@@ -22,6 +22,7 @@ module SAMx32(
 	output E,
 	output [6:0] CC,
 	output [3:0] CR,
+	output reg [3:0] CS,
 	output HSn,
 	output FSn
 );
@@ -59,6 +60,10 @@ module SAMx32(
 //		.GM (GM),
 //		.CSS (CSS)
 //	);
+
+	initial begin
+		CS <= 4'b0;
+	end
 	
 	vsamx	SAM (
 		.OscOut (OSCin),

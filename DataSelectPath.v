@@ -27,7 +27,7 @@ module DataSelectPath(
 		output selSemi
     );
 
-	assign Divider = AnG && (GM == 3'b000);
-	assign selSemi = !AnG && AnS;
-	assign selAlpha = !AnG && !AnS;
+	assign Divider = AnG && (GM == 3'b000) ? 1'b1 : 1'b0;
+	assign selSemi = !AnG && AnS ? 1'b1 : 1'b0;
+	assign selAlpha = !AnG && !AnS ? 1'b1 : 1'b0;
 endmodule

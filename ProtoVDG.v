@@ -69,14 +69,14 @@ module ProtoVDG(
 	wire viewportActive;
 	wire blank;
 
-	parameter forceMode = 1'b1;
+	parameter forceMode = 1'b0;
 	parameter forceAlpha = 1'b1;
 	parameter forceGM = 3'd6;
 	parameter forceCSS = 1'b0;
 	parameter forceSG = 1'b0;
 	parameter forceFormat = 1'b0;
 	parameter forceInv = 1'b0;
-	parameter forceData = 8'h1E; // 4 colours in bitmap mode
+	parameter forceData = 8'd65; //8'h1E; // 4 colours in bitmap mode
 
 	wire useAlpha;
 	wire [2:0] useGM;
@@ -86,15 +86,29 @@ module ProtoVDG(
 	wire useInv;
 	wire [7:0] useData;
 
-	assign useAlpha = forceMode ? forceAlpha : AnG;
-	assign useGM = forceMode ? forceGM : GM;
-	assign useCSS = forceMode ? forceCSS : Css;
+	reg [7:0] testcode;
+
+	assign useAlpha = 1'b0; //forceMode ? forceAlpha : AnG;
+	assign useGM = 3'b000; //forceMode ? forceGM : GM;
+	assign useCSS = 1'b1; //forceMode ? forceCSS : Css;
 	assign useAnS = useData[7]; //forceMode ? forceSG : useData[7];
-	assign useInv = forceMode ? forceInv : Inv;
-	assign useFormat = forceMode ? forceFormat : Format;
-	assign useData = forceMode ? forceData : Data;
+	assign useInv = useData[6]; //forceMode ? forceInv : Inv;
+	assign useFormat = 1'b0; //forceMode ? forceFormat : Format;
+	assign useData = testcode; //forceMode ? forceData : Data;
 	
 	assign AlphaCode = useData[6:0];
+	
+	initial begin
+		testcode <= 8'd112;
+	end
+	
+	always @(negedge HSn or negedge VideoLoadClock) begin
+		if (HSn == 1'b0)
+			testcode <= 8'd112;
+//		else if (VideoLoadClock == 1'b0)
+//			if (viewportActive == 1'b1)
+//				testcode <= testcode + 8'd1;
+	end
 
 	// Multiplexer - pick colour clock timing based on Format signal
 	FormatSelect	FrmtSel (
@@ -174,7 +188,8 @@ module ProtoVDG(
 	// alpha data shift register
    RawShift			AlphaSf (
 							.Clk(PClk),
-                     .Data(AlphaData),
+//                     .Data(AlphaData),
+                     .Data(useData),
                      .Divider(Divider),
                      .Load(Load),
                      .Pixel(AlphaPixel[1:0])

@@ -178,3 +178,7 @@ set_global_assignment -name VERILOG_FILE vdiv4.v
 set_global_assignment -name VERILOG_FILE VCAddressCounter.v
 set_global_assignment -name VERILOG_FILE DeviceSelect.v
 set_global_assignment -name VERILOG_FILE vsamx.v
+set_location_assignment PIN_96 -to CS[1]
+set_location_assignment PIN_104 -to CS[0]
+set_location_assignment PIN_101 -to CS[2]
+set_location_assignment PIN_97 -to CS[3]

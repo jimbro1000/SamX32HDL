@@ -83,29 +83,29 @@ module FormatTiming(
 	// to achieve 40 data access cycles per line the preload must start at 66-69 clock cycles
 
 	always @(negedge Clk) begin
-		if (colCounter == allcols) begin
-			colCounter <= 0;
-			HSn <= 1'b0;
-			hBlank <= 1'b1;
-			daCountEnable <= 1'b0;
-			if (lineCounter == (FrameFormat == 1'b1 ? 9'd258 : 9'd311)) begin
-				lineCounter <= 0;
-				FSn <= 1'b0;
-				vBlank <= 1'b1;
+		if (colCounter == allcols) begin 														// end of horizontal line
+			colCounter <= 0; 																			// reset column counter
+			HSn <= 1'b0;																				// force horizontal sync
+			hBlank <= 1'b1;																			// force horizontal blank (backporch)
+			daCountEnable <= 1'b0;																	// disable DA counter
+			if (lineCounter == (FrameFormat == 1'b1 ? 9'd258 : 9'd311)) begin			// if end of frame
+				lineCounter <= 0;																		// reset line counter
+				FSn <= 1'b0;																			// force vertical sync
+				vBlank <= 1'b1;																		// force vertical blank
 			end else begin
 				// logic will deliberately fall through
-				lineCounter <= lineCounter + 9'd1;
-				if (lineCounter == vsync)
+				lineCounter <= lineCounter + 9'd1;												// count next line
+				if (lineCounter == vsync)															// if line counter is end of vsync then cancel vsync
 					FSn <= 1'b1;
-				if (lineCounter == (FrameFormat == 1'b1 ? 9'd30 : 9'd55))
+				if (lineCounter == (FrameFormat == 1'b1 ? 9'd30 : 9'd55))				// if line counter is end of vblank then cancel vblank
 					vBlank <= 1'b0;
-				if (lineCounter == frameTopRow)
+				if (lineCounter == frameTopRow)													// if line counter is start of viewport flag active row
 					activeRow <= 1'b1;
-				if (lineCounter == frameBottomRow)
+				if (lineCounter == frameBottomRow)												// if line counter is end of viewport cancel active row
 					activeRow <= 1'b0;
-				if ((alphaRowCounter == 4'b1011) || (lineCounter == frameTopRow))
+				if ((alphaRowCounter == 4'b1011) | (lineCounter == frameTopRow))		// keep counting 0..11 for the text character row starting from top of viewport
 					alphaRowCounter <= 4'd0;
-				else
+				else if (activeRow)																	// only counter within viewport
 					alphaRowCounter <= alphaRowCounter + 4'd1;
 			end
 		end else begin
@@ -135,6 +135,7 @@ module FormatTiming(
 			else if (HSn == 1'b0)
 				u_da0 <= 1'b0;
 		end
+		// trigger data load on 16 cycle boundary for hires and 32 cycle boundary for medium res
 		Load = slowMode == 1'b1 ? colCounter[4:0] == 5'd0 : colCounter[3:0] == 4'd0;
 	end
 	
