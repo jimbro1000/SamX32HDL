@@ -30,16 +30,17 @@ module SemiShift(
 	reg [1:0] offset;
 	wire PClk;
 	
-	vdiv4 slowclock(
+	vdiv4 slowclock (
 		.clk(Clk),
 		.rst(1'b0),
 		.q(PClk)
 	);
-	
+
 	always @(negedge PClk) begin
-		if (Load)
+		if (Load) begin
+			pixelData <= Data;
 			offset <= 2'b11;
-		else
+		end else
 			offset <= offset - 2'd1;
 		case (offset)
 			2'b11, 2'b10:
@@ -47,10 +48,6 @@ module SemiShift(
 			default:
 				Colour <= pixelData[3] ? 4'b0000 : SColour;
 		endcase
-	end
-
-	always @(posedge Load) begin
-		pixelData <= Data;
 	end
 
 endmodule

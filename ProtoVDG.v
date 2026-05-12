@@ -69,7 +69,7 @@ module ProtoVDG(
 	wire viewportActive;
 	wire blank;
 
-	parameter forceMode = 1'b0;
+	parameter forceMode = 1'b1;
 	parameter forceAlpha = 1'b1;
 	parameter forceGM = 3'd6;
 	parameter forceCSS = 1'b0;
