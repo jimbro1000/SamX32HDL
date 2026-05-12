@@ -127,12 +127,14 @@ module FormatTiming(
 				active <= 1'b0;
 		end
 
-		daCount <= daCount + 2'd1;
-		if (daCount == daResetLimit)
-			if (daCountEnable)
+		daCount <= daCount + 7'd1;
+		if (daCount == daResetLimit) begin
+			daCount <= 7'd0;
+			if (daCountEnable == 1'b1)
 				u_da0 <= ~u_da0;
 			else if (HSn)
 				u_da0 <= 1'b0;
+		end
 		Load = slowMode ? colCounter[2:0] == 3'd1 : colCounter[1:0] == 2'd1;
 	end
 	
@@ -240,14 +242,16 @@ module FormatTiming(
 //	end
 	
 	initial begin
-	   u_da0 = 1'b1;
-		colCounter = 11'd0;
-		lineCounter = 9'd0;
-		Clk3 = 0;
-		alphaRowCounter = 0;
-		daCount = 7'd0;
+	   u_da0 <= 1'b1;
+		DA0 <= 1'b1;
+		colCounter <= 11'd0;
+		lineCounter <= 9'd0;
+		Clk3 <= 0;
+		alphaRowCounter <= 0;
+		daCount <= 7'd0;
 		HSn <= 1'b0;
 		FSn <= 1'b0;
+		daResetLimit <= 7'd16;
 	end
 
 	// vertical sync active low

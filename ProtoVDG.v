@@ -69,7 +69,7 @@ module ProtoVDG(
 	wire viewportActive;
 	wire blank;
 
-	parameter forceMode = 1'b1;
+	parameter forceMode = 1'b0;
 	parameter forceAlpha = 1'b1;
 	parameter forceGM = 3'd6;
 	parameter forceCSS = 1'b0;
@@ -234,4 +234,95 @@ module ProtoVDG(
 							.Border(BRDR),
                      .RGB(RGB)
 						);
+endmodule
+
+module ProtoVDG_testbench();
+
+	reg AnG;
+	wire AnS;
+	reg Clk;
+	reg Css;
+	reg [7:0] Data;
+	reg [7:0] AlphaRowData;
+	reg Format;
+	reg [2:0] GM;
+	wire Inv;
+	reg VC_EN;
+	reg [1:0] CRES;
+	reg [1:0] LPF;
+	reg BP;
+	reg [2:0] HRES;
+	reg [7:0] BRDR;
+	reg VideoLoadClock;
+
+	assign AnS = Data[7];
+	assign Inv = Data[6];
+
+	wire [3:0] AlphaRow;
+	wire [6:0] AlphaCode;
+	wire DA0;
+	wire FSn;
+	wire HSn;
+	wire OutputFormat;
+	wire [11:0] RGB;
+	wire VR;
+	
+	parameter clockperiod = 69480;
+	parameter halfclock = 34740;
+	
+	ProtoVDG uut (
+		.AnG (AnG),
+		.AnS (AnS),
+		.Clk (Clk),
+		.Css (Css),
+		.Data (Data),
+		.AlphaRowData (AlphaRowData),
+		.Format (Format),
+		.GM (GM),
+		.Inv (Inv),
+		.VC_EN (VC_EN),
+		.CRES (CRES),
+		.LPF (LPF),
+		.BP (BP),
+		.HRES (HRES),
+		.BRDR (BRDR),
+		.VideoLoadClock (VideoLoadClock),
+
+		.AlphaRow (AlphaRow),
+		.AlphaCode (AlphaCode),
+		.DA0 (DA0),
+		.FSn (FSn),
+		.HSn (HSn),
+		.OutputFormat (OutputFormat),
+		.RGB (RGB),
+		.VR(VR)
+	);
+	
+	initial begin
+		Css <= 1'b0;
+		AnG <= 1'b1;
+		GM <= 3'd6;
+		Clk <= 1'b0;
+		Data <= 8'd65;
+		AlphaRowData <= 8'hFF;
+		Format <= 1'b1;
+		VideoLoadClock <= 1'b0;
+	end
+	
+	// video pixel clock generator
+	always begin
+		#(halfclock) Clk = ~Clk;
+	end
+
+	integer VLCdivider;
+	// videoLoadClock
+	always begin
+		for (VLCdivider = 0; VLCdivider < 12; VLCdivider = VLCdivider + 1)
+			#(clockperiod);
+		VideoLoadClock <= 1'b0;
+		for (VLCdivider = 0; VLCdivider < 4; VLCdivider = VLCdivider + 1)
+			#(clockperiod);
+		VideoLoadClock <= 1'b1;
+	end
+	
 endmodule
