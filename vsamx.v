@@ -487,10 +487,9 @@ module vsamx(
 //		.rst(1'b0)
 //	);
 	
-//	-- Note: IR defaults to '1' and is permanently set to '0' halfway
-//	-- through a machine cycle.
+//	-- Note: IR defaults to '1' and is permanently set to '0' halfway through a machine cycle.
 	assign ER = ~nER; // (nER == 1'b0 & VClk_BOSC_div2_q == 1'b0 & VClk_BOSC_div4_q == 1'b0) ? 1'b1 : 1'b0;
-	assign IER = IR | ER;
+	assign IER = ER; // IR | ER;
 
 //	-- Horizontal Reset (HR)
 

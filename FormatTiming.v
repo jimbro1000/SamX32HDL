@@ -139,8 +139,13 @@ module FormatTiming(
 		Load = slowMode == 1'b1 ? colCounter[4:0] == 5'd0 : colCounter[3:0] == 4'd0;
 	end
 	
-	reg Clk3;
+	reg Clk2;
 	always @(negedge Clk) begin
+		Clk2 <= ~Clk2;
+	end
+	
+	reg Clk3;
+	always @(negedge Clk2) begin
 		Clk3 = ~Clk3;
 	end
 
@@ -247,8 +252,9 @@ module FormatTiming(
 		DA0 <= 1'b1;
 		colCounter <= 11'd0;
 		lineCounter <= 9'd0;
-		Clk3 <= 0;
-		alphaRowCounter <= 0;
+		Clk2 <= 1'b0;
+		Clk3 <= 1'b0;
+		alphaRowCounter <= 4'b0;
 		daCount <= 7'd0;
 		HSn <= 1'b0;
 		FSn <= 1'b0;

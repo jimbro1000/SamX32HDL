@@ -88,9 +88,9 @@ module ProtoVDG(
 
 	reg [7:0] testcode;
 
-	assign useAlpha = 1'b0; //forceMode ? forceAlpha : AnG;
-	assign useGM = 3'b000; //forceMode ? forceGM : GM;
-	assign useCSS = 1'b1; //forceMode ? forceCSS : Css;
+	assign useAlpha = forceMode ? forceAlpha : AnG;
+	assign useGM = forceMode ? forceGM : GM;
+	assign useCSS = forceMode ? forceCSS : Css;
 	assign useAnS = useData[7]; //forceMode ? forceSG : useData[7];
 	assign useInv = useData[6]; //forceMode ? forceInv : Inv;
 	assign useFormat = 1'b0; //forceMode ? forceFormat : Format;
@@ -188,8 +188,8 @@ module ProtoVDG(
 	// alpha data shift register
    RawShift			AlphaSf (
 							.Clk(PClk),
-//                     .Data(AlphaData),
-                     .Data(useData),
+                     .Data(AlphaData),
+//                     .Data(useData),
                      .Divider(Divider),
                      .Load(Load),
                      .Pixel(AlphaPixel[1:0])

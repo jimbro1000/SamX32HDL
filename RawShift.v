@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+//`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -27,8 +27,9 @@ module RawShift(
 );
 
 	reg [7:0] pixelData;
-	reg [1:0] offset;
+	reg [2:0] offset;
 	wire PClk;
+	wire q;
 	
 	vdiv4 slowclock(
 		.clk(Clk),
@@ -36,19 +37,24 @@ module RawShift(
 		.q(PClk)
 	);
 	
-	always @(negedge PClk) begin
+	initial begin
+		offset <= 3'b111;
+		pixelData <= 8'd0;
+	end
+	
+	always @(negedge Clk) begin
 		if (Load == 1'b1) begin
 			pixelData <= Data;
-			offset <= 2'b11;
+			offset <= 3'b111;
 		end else
-			offset <= offset - 2'd1;
+			offset <= offset - 3'd1;
 	end
 	
 	always @(Clk) begin
 		if (Divider == 1'b0)
-			Pixel <= {1'b0,pixelData[{offset, PClk}]};
+			Pixel <= {1'b0,pixelData[offset]};
 		else
-			case (offset)
+			case (offset[2:1])
 				2'b11:
 					Pixel <= pixelData[7:6];
 				2'b10:
@@ -60,4 +66,50 @@ module RawShift(
 			endcase
 	end
 	
+endmodule
+
+module RawShift_testbench();
+
+	reg Clk;
+	reg [7:0] Data;
+	reg Divider;
+	reg Load;
+	wire [1:0] Pixel;
+
+	RawShift uut(
+		.Clk(Clk),
+		.Data(Data),
+		.Divider(Divider),
+		.Load(Load),
+		.Pixel(Pixel)
+	);
+	
+	initial begin
+		Clk <= 1'b0;
+		Data <= 8'b11100100;
+		Divider <= 1'b0;
+		Load <= 1'b0;
+	end
+	
+	integer loadCounter;
+	
+	always begin
+		Divider <= 1'b0;
+		for (loadCounter = 0; loadCounter < 16; loadCounter = loadCounter + 1) begin
+			#200 Clk <= ~Clk;
+			if (loadCounter == 0)
+				Load <= 1'b1;
+			if (loadCounter == 2)
+				Load <= 1'b0;
+		end
+		Divider <= 1'b1;
+		for (loadCounter = 0; loadCounter < 16; loadCounter = loadCounter + 1) begin
+			#200 Clk <= ~Clk;
+			if (loadCounter == 0)
+				Load <= 1'b1;
+			if (loadCounter == 2)
+				Load <= 1'b0;
+		end
+	end
+
 endmodule

@@ -84,8 +84,11 @@ always @(negedge OSC) begin
 		  nCE <= 1'b1;
 end
 
-always @(negedge OSC) begin
+always @(posedge OSC)
 	State <= NextState;
+
+always @(negedge OSC) begin
+//	State <= NextState;
 	case (State)
 		4'd15: begin
 			NextState <= 4'd0;
