@@ -106,13 +106,9 @@ module ProtoVDG(
 	end
 	
 	always @(negedge FSn) begin // or negedge VideoLoadClock) begin
-		//if (HSn == 1'b0)
 		frmCount <= frmCount + 4'd1;
 		if (frmCount == 0)
 			testcode <= testcode + 8'd1; //8'd112;
-//		else if (VideoLoadClock == 1'b0)
-//			if (viewportActive == 1'b1)
-//				testcode <= testcode + 8'd1;
 	end
 
 	// Multiplexer - pick colour clock timing based on Format signal

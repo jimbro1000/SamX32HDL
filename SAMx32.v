@@ -61,12 +61,12 @@ module SAMx32(
 //		.CSS (CSS)
 //	);
 
-	assign AnG = 1'b0;
-	assign GM = 3'b000;
-	assign CSS = 1'b0;
+	assign AnG = 1'b1;
+	assign GM = 3'b110;
+	assign CSS = 1'b1;
 
 	initial begin
-		CS <= 4'b0;
+		CS <= 4'd0;
 	end
 		
 	vsamx	SAM (
