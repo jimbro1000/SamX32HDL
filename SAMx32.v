@@ -5,9 +5,9 @@ module SAMx32(
 	input RWn,
 	input OSCin,
 	input RSTn,
-	input [2:0] GM,
-	input CSS,
-	input AnG,
+//	input [2:0] GM,
+//	input CSS,
+//	input AnG,
 	input [7:0] CD,
 	input [7:0] RD,
 	output [11:0] RGBout,
@@ -35,9 +35,9 @@ module SAMx32(
 	wire VClk;			// Video clock
 	wire DA0;			// Video data access read
 	wire RFormat;     // Requested video format (redundant?)
-//	wire AnG;         // Alpha/Graphic mode select
-//	wire CSS;         // Colour set select
-//	wire [2:0] GM;    // Graphic mode selector
+	wire AnG;         // Alpha/Graphic mode select
+	wire CSS;         // Colour set select
+	wire [2:0] GM;    // Graphic mode selector
 	wire VCE;         // Video Compatible Mode Enable
 //	wire [127:0] Palette; // 16x8 palette table
 	wire [1:0] CRES;  // Bits per pixel (1/2/4/8)
@@ -61,14 +61,14 @@ module SAMx32(
 //		.CSS (CSS)
 //	);
 
-//	assign AnG = 1'b0;
-//	assign GM = 3'b000;
-//	assign CSS = 3'b0;
+	assign AnG = 1'b0;
+	assign GM = 3'b000;
+	assign CSS = 1'b0;
 
 	initial begin
 		CS <= 4'b0;
 	end
-	
+		
 	vsamx	SAM (
 		.OscOut (OSCin),
 		.E (E),

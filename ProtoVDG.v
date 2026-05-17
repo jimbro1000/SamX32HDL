@@ -83,7 +83,7 @@ module ProtoVDG(
 	wire useCSS;
 	wire useAnS;
 	wire useFormat;
-	wire useInv;
+//	wire useInv;
 	wire [7:0] useData;
 
 	reg [7:0] testcode;
@@ -92,19 +92,24 @@ module ProtoVDG(
 	assign useGM = forceMode ? forceGM : GM;
 	assign useCSS = forceMode ? forceCSS : Css;
 	assign useAnS = useData[7]; //forceMode ? forceSG : useData[7];
-	assign useInv = useData[6]; //forceMode ? forceInv : Inv;
+//	assign useInv = useData[6]; //forceMode ? forceInv : Inv;
 	assign useFormat = 1'b0; //forceMode ? forceFormat : Format;
 	assign useData = testcode; //forceMode ? forceData : Data;
 	
 	assign AlphaCode = useData[6:0];
 	
+	reg [3:0] frmCount;
+	
 	initial begin
 		testcode <= 8'd112;
+		frmCount <= 4'd0;
 	end
 	
-	always @(negedge HSn or negedge VideoLoadClock) begin
-		if (HSn == 1'b0)
-			testcode <= 8'd112;
+	always @(negedge FSn) begin // or negedge VideoLoadClock) begin
+		//if (HSn == 1'b0)
+		frmCount <= frmCount + 4'd1;
+		if (frmCount == 0)
+			testcode <= testcode + 8'd1; //8'd112;
 //		else if (VideoLoadClock == 1'b0)
 //			if (viewportActive == 1'b1)
 //				testcode <= testcode + 8'd1;
@@ -180,15 +185,15 @@ module ProtoVDG(
                      .SData(SData)
 						);
 	// Apply inverse mode if required
-	AlphaSwitch  	AlphaSw (
-							.Data(AlphaRowData),
-							.Inv(useInv),
-							.AData(AlphaData)
-							);
+//	AlphaSwitch  	AlphaSw (
+//							.Data(AlphaRowData),
+//							.Inv(useInv),
+//							.AData(AlphaData)
+//							);
 	// alpha data shift register
    RawShift			AlphaSf (
 							.Clk(PClk),
-                     .Data(AlphaData),
+                     .Data(AlphaRowData),
 //                     .Data(useData),
                      .Divider(Divider),
                      .Load(Load),
