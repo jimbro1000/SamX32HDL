@@ -62,7 +62,7 @@ module SAMx32(
 //	);
 
 	assign AnG = 1'b1;
-	assign GM = 3'b110;
+	assign GM = 3'b000;
 	assign CSS = 1'b1;
 
 	initial begin

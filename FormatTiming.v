@@ -53,6 +53,7 @@ module FormatTiming(
 	reg u_da0;
 	reg hBlank;
 	reg vBlank;
+	reg Clk2;
 	
 	assign LeftBorder = {LeftBorderMargin, 2'b00};
 	assign RightBorder = {RightBorderMargin, 2'b00};
@@ -84,6 +85,7 @@ module FormatTiming(
 
 	always @(negedge Clk) begin
 		if (colCounter == allcols) begin 														// end of horizontal line
+			//Clk2 <= 1'b0;
 			colCounter <= 0; 																			// reset column counter
 			HSn <= 1'b0;																				// force horizontal sync
 			hBlank <= 1'b1;																			// force horizontal blank (backporch)
@@ -109,6 +111,7 @@ module FormatTiming(
 					alphaRowCounter <= alphaRowCounter + 4'd1;
 			end
 		end else begin
+			Clk2 <= ~Clk2;
 			// logic will deliberately fall through
 			colCounter <= colCounter + 9'd1;
 			if (colCounter == leftSync)
@@ -139,15 +142,10 @@ module FormatTiming(
 		Load = slowMode == 1'b1 ? colCounter[4:0] == 5'd0 : colCounter[3:0] == 4'd0;
 	end
 	
-	reg Clk2;
-	always @(negedge Clk) begin
-		Clk2 <= ~Clk2;
-	end
-	
-	reg Clk3;
-	always @(negedge Clk2) begin
-		Clk3 = ~Clk3;
-	end
+//	reg Clk3;
+//	always @(negedge Clk2) begin
+//		Clk3 = ~Clk3;
+//	end
 
 	// only change DA0 on falling edge of Q, guarantees the change is in phase with SAM
 	// may need to move preload to a full 4 cycles before it is needed
@@ -253,7 +251,7 @@ module FormatTiming(
 		colCounter <= 11'd0;
 		lineCounter <= 9'd0;
 		Clk2 <= 1'b0;
-		Clk3 <= 1'b0;
+//		Clk3 <= 1'b0;
 		alphaRowCounter <= 4'b0;
 		daCount <= 7'd0;
 		HSn <= 1'b0;
@@ -270,8 +268,8 @@ module FormatTiming(
 	assign BackPorch = hBlank || vBlank;
 	
 	// general signals
-	assign slowMode = VC_EN && AnG && (GMode == 3'b000);
-	assign PixelClk = slowMode ? Clk3 : Clk;
+	assign slowMode = (AnG == 1'b1) && (GMode == 3'b000); // && VC_EN;
+	assign PixelClk = slowMode ? Clk2 : Clk;
 	assign frameTopRow = TopMargin; //FrameFormat ? toprow2 : toprow; // FrameFormat 0=PAL/1=NTSC
 	assign frameBottomRow = BottomMargin; //FrameFormat ? bottomrow2 : bottomrow;
 

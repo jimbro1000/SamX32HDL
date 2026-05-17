@@ -102,7 +102,7 @@ module ColourMux(
 					4'b0111:
 						RGB = 12'b111100111111; // magenta
 					4'b1000:
-						RGB = 12'b111111100000; // orange
+						RGB = 12'b111111000000; // orange
 					4'b1001:
 						RGB = 12'b111111000100; // bright orange
 					4'b1010:
