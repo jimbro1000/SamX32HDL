@@ -1,5 +1,4 @@
 module ProtoVDG(
-	GClk,
 	AnG,
 	AnS,
 	Clk,
@@ -27,7 +26,6 @@ module ProtoVDG(
 	VR
 );
 
-	input GClk;
 	input AnG;
 	input AnS;
 	input Clk;
@@ -39,8 +37,8 @@ module ProtoVDG(
 	input Inv;
 	input [127:0] PaletteDef;
 	input VC_EN;
-	input [2:0] CRES;
-	input [2:0] LPF;
+	input [1:0] CRES;
+	input [1:0] LPF;
 	input BP;
 	input [2:0] HRES;
 	input [7:0] BRDR;
@@ -106,14 +104,10 @@ module ProtoVDG(
 							.FrameFormat(OutputFormat)
 						);
 				
-	wire [6:0] BPR;
-	wire [10:0] LeftMargin;
-	wire [10:0] RightMargin;
-	wire [8:0] AllRows;
-	wire [8:0] TopBlank;
+	wire [8:0] LeftMargin;
+	wire [8:0] RightMargin;
 	wire [8:0] TopMargin;
 	wire [8:0] BottomMargin;
-	wire [2:0] BPP;
 					
 	FormatProfiler FmtProfile (
 							.clk(Clk),
@@ -123,16 +117,11 @@ module ProtoVDG(
 							.VC_EN(VC_EN),
 							.BP(BP),
 							.HRES(HRES),
-							.CRES(CRES),
 							.LPF(LPF),
-							.BytesPerRow(BPR),
 							.LeftMargin(LeftMargin),
 							.RightMargin(RightMargin),
-							.AllRows(AllRows),
-							.TopBlank(TopBlank),
 							.TopMargin(TopMargin),
 							.BottomMargin(BottomMargin),
-							.BPP(BPP),
 							.fast_video(VR)
 	);
 	// Frame timing generator - orchestrate sync, data pre-load
@@ -141,15 +130,14 @@ module ProtoVDG(
 							.Clk(Clk), 
 							.VC_EN(VC_EN),
 							.BP(BP),
-							.BytesPerRow(BPR),
+							.HRES(HRES),
 							.LeftBorderMargin(LeftMargin),
 							.RightBorderMargin(RightMargin),
-							.AllRows(AllRows),
-							.TopBlank(TopBlank),
 							.TopMargin(TopMargin),
 							.BottomMargin(BottomMargin),
-							.BPP(BPP),
+							.CRES(CRES),
 							.FrameFormat(OutputFormat), 
+							.VideoLoadClock(VideoLoadClock),
 							.GMode(useGM), 
 							.alphaRow(AlphaRow), 
 							.DA0(DA0), 

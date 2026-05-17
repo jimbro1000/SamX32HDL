@@ -37,7 +37,7 @@
 
 
 set_global_assignment -name FAMILY "MAX II"
-set_global_assignment -name DEVICE EPM570T144C5
+set_global_assignment -name DEVICE EPM1270T144C5
 set_global_assignment -name TOP_LEVEL_ENTITY SAMx32
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION "13.0 SP1"
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:14:10  MARCH 19, 2026"
@@ -165,3 +165,16 @@ set_location_assignment PIN_80 -to CD[2]
 set_location_assignment PIN_81 -to CD[0]
 set_global_assignment -name SDC_FILE SAMx32.sdc
 set_global_assignment -name VERILOG_FILE FormatProfiler.v
+set_location_assignment PIN_119 -to CSS
+set_location_assignment PIN_118 -to AnG
+set_location_assignment PIN_114 -to GM[0]
+set_location_assignment PIN_113 -to GM[1]
+set_location_assignment PIN_112 -to GM[2]
+set_global_assignment -name VERILOG_FILE Quadrature.v
+set_global_assignment -name VERILOG_FILE SamRegisters.v
+set_global_assignment -name VERILOG_FILE vdiv2.v
+set_global_assignment -name VERILOG_FILE vdiv3.v
+set_global_assignment -name VERILOG_FILE vdiv4.v
+set_global_assignment -name VERILOG_FILE VCAddressCounter.v
+set_global_assignment -name VERILOG_FILE DeviceSelect.v
+set_global_assignment -name VERILOG_FILE vsamx.v
