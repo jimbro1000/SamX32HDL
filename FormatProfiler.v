@@ -29,6 +29,34 @@ initial begin
 end
 
 always @(negedge clk) begin
+	case ({format, AnG, GM})
+		5'b01001: begin // 
+			LeftMargin <= 9'd48;
+			RightMargin <= 9'd208;
+			TopMargin <= 9'd80;
+			BottomMargin <= 9'd280;
+			fast_video <= 1'b1;	
+		end
+		5'b11001: begin
+			LeftMargin <= 9'd48;
+			RightMargin <= 9'd208;
+			TopMargin <= 9'd41;
+			BottomMargin <= 9'd241;
+			fast_video <= 1'b1;	
+		end
+		default: begin
+			LeftMargin <= 9'd64;
+			RightMargin <= 9'd192;
+			if (format == 1'b1) begin // ntsc
+				TopMargin <= 9'd45;
+				BottomMargin <= 9'd237;
+			end else begin // pal
+				TopMargin <= 9'd84;
+				BottomMargin <= 9'd276;
+			end
+			fast_video <= 1'b0;	
+		end
+	endcase;
 //	if (format == 1'b1) begin
 //		AllRows <= 9'd258;
 //		TopBlank <= 9'd32;
@@ -37,16 +65,18 @@ always @(negedge clk) begin
 //		TopBlank <= 9'd57;
 //	end
 ////	if (VC_EN == 1'b1) begin // compatibility mode
-		LeftMargin <= 9'd64;
-		RightMargin <= 9'd192;
-		if (format == 1'b1) begin // ntsc
-			TopMargin <= 9'd45;
-			BottomMargin <= 9'd237;
-		end else begin // pal
-			TopMargin <= 9'd84;
-			BottomMargin <= 9'd276;
-		end
-		fast_video <= 1'b0;
+
+//		LeftMargin <= 9'd64;
+//		RightMargin <= 9'd192;
+//		if (format == 1'b1) begin // ntsc
+//			TopMargin <= 9'd45;
+//			BottomMargin <= 9'd237;
+//		end else begin // pal
+//			TopMargin <= 9'd84;
+//			BottomMargin <= 9'd276;
+//		end
+//		fast_video <= 1'b0;
+
 //	end else begin
 //		if (format == 1'b1) begin // ntsc
 //			case (LPF)
@@ -150,3 +180,70 @@ always @(negedge clk) begin
 end
 
 endmodule
+
+module FormatProfiler_testbench();
+
+	reg clk;
+	reg format;
+	reg [2:0] GM;
+	reg AnG;
+	reg VC_EN;
+	reg BP;
+	reg [2:0] HRES;
+	reg [1:0] LPF;
+	
+	wire [8:0] LeftMargin;
+	wire [8:0] RightMargin;
+	wire [8:0] TopMargin;
+	wire [8:0] BottomMargin;
+	wire fast_video;
+
+FormatProfiler uut (
+	.clk(clk),
+	.format(format),
+	.GM(GM),
+	.AnG(AnG),
+	.VC_EN(VC_EN),
+	.BP(BP),
+	.HRES(HRES),
+	.LPF(LPF),
+	
+	.LeftMargin(LeftMargin),
+	.RightMargin(RightMargin),
+	.TopMargin(TopMargin),
+	.BottomMargin(BottomMargin),
+	.fast_video(fast_video)
+);
+
+	initial begin
+		clk <= 1'b0;
+		format <= 1'b0;
+		AnG <= 1'b0;
+		VC_EN <= 1'b1;
+		GM <= 3'd0;
+		
+		#200 AnG <= 1'b1;;
+		#200 GM <= 3'd1;
+		#200 GM <= 3'd2;
+		#200 GM <= 3'd3;
+		#200 GM <= 3'd4;
+		#200 GM <= 3'd5;
+		#200 GM <= 3'd6;
+		#200 GM <= 3'd7;
+		#200 format <= 1'b1; AnG <= 1'b0; GM <= 3'd0;
+		#200 AnG <= 1'b1;;
+		#200 GM <= 3'd1;
+		#200 GM <= 3'd2;
+		#200 GM <= 3'd3;
+		#200 GM <= 3'd4;
+		#200 GM <= 3'd5;
+		#200 GM <= 3'd6;
+		#200 GM <= 3'd7;
+	end
+	
+	always begin
+		#100 clk <= ~clk;
+	end
+
+endmodule
+

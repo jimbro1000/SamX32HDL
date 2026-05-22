@@ -107,6 +107,8 @@ module FormatTiming(
 					activeRow <= 1'b0;
 				if ((alphaRowCounter == 4'b1011) | (lineCounter == frameTopRow))		// keep counting 0..11 for the text character row starting from top of viewport
 					alphaRowCounter <= 4'd0;
+				if ((alphaRowCounter == 4'b1001) & (GMode == 3'd1) & (AnG == 1'b1))  // custom mode for showing off - only 10 pixel high characters
+					alphaRowCounter <= 4'd0;
 				else if (activeRow)																	// only counter within viewport
 					alphaRowCounter <= alphaRowCounter + 4'd1;
 			end
