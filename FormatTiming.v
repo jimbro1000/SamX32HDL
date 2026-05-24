@@ -82,6 +82,11 @@ module FormatTiming(
 	
 	// parameter activecols = 128;// * 2 = 256
 	// to achieve 40 data access cycles per line the preload must start at 66-69 clock cycles
+	
+	initial begin
+		vBlank <= 1'b1;
+		hBlank <= 1'b1;
+	end
 
 	always @(negedge Clk) begin
 		if (colCounter == allcols) begin 														// end of horizontal line
@@ -105,10 +110,12 @@ module FormatTiming(
 					activeRow <= 1'b1;
 				if (lineCounter == frameBottomRow)												// if line counter is end of viewport cancel active row
 					activeRow <= 1'b0;
-				if ((alphaRowCounter == 4'b1011) | (lineCounter == frameTopRow))		// keep counting 0..11 for the text character row starting from top of viewport
+				if ((VC_EN == 4'b1) & (alphaRowCounter == 4'b1011) | (lineCounter == frameTopRow))		// keep counting 0..11 for the text character row starting from top of viewport
 					alphaRowCounter <= 4'd0;
-				if ((alphaRowCounter == 4'b1001) & (GMode == 3'd1) & (AnG == 1'b1))  // custom mode for showing off - only 10 pixel high characters
+				if ((VC_EN == 4'b1) & (alphaRowCounter == 4'b1001) & (GMode == 3'd1) & (AnG == 1'b1))  // custom mode for showing off - only 10 pixel high characters
 					alphaRowCounter <= 4'd0;
+				//if ((VC_EN == 4'b0) & (alphaRowCounter == 4'b0111))						// 8 pixel high to distinguish GIME text modes
+				//	alphaRowCounter <= 4'd0;
 				else if (activeRow)																	// only counter within viewport
 					alphaRowCounter <= alphaRowCounter + 4'd1;
 			end

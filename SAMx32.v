@@ -39,7 +39,7 @@ module SAMx32(
 	wire CSS;         // Colour set select
 	wire [2:0] GM;    // Graphic mode selector
 	wire VCE;         // Video Compatible Mode Enable
-//	wire [127:0] Palette; // 16x8 palette table
+	wire [127:0] Palette; // 16x8 palette table
 	wire [1:0] CRES;  // Bits per pixel (1/2/4/8)
 	wire [2:0] LPR;   // Lines per row
 	wire [1:0] LPF;   // Lines per field
@@ -62,8 +62,8 @@ module SAMx32(
 //	);
 
 	assign AnG = 1'b1;
-	assign GM = 3'b001;
-	assign CSS = 1'b0;
+	assign GM = 3'b100;
+	assign CSS = 1'b1;
 
 	initial begin
 		CS <= 4'd0;
@@ -90,7 +90,7 @@ module SAMx32(
 		.DA0 (DA0),
 		.nHS (HSn),
 		.VC_EN (VCE),
-		//.PDEF (Palette),
+		.PDEF (Palette),
 		.CRES (CRES),
 		.LPR (LPR),
 		.LPF (LPF),
@@ -129,7 +129,7 @@ module SAMx32(
 		.BP (BP),
 		.HRES (HRES),
 		.BRDR (BRDR),
-		//.PaletteDef (Palette),
+		.PaletteDef (Palette),
 		.VideoLoadClock (VLC),
 		.VR(VR)
 	);
@@ -163,16 +163,16 @@ module SAMx32_testbench();
 	wire FSn;
 	wire [3:0] CS;
 	
-	parameter clockCycle = 34920;
+	parameter clockCycle = 3492;
 
 	SAMx32 uut (
 		.A(A),
 		.RWn(RWn),
 		.OSCin(OSCin),
 		.RSTn(RSTn),
-		.GM(GM),
-		.CSS(CSS),
-		.AnG(AnG),
+//		.GM(GM),
+//		.CSS(CSS),
+//		.AnG(AnG),
 		.CD(CD),
 		.RD(RD),
 		.RGBout(RGBout),

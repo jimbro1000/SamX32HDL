@@ -221,7 +221,7 @@ module vsamx(
 			  
 // Video Control
 	output VC_EN,			// video compatible (1=std)
-	//output [127:0] PDEF, // palette definition 16 x 8 bit RGB entries
+	output [127:0] PDEF, // palette definition 16 x 8 bit RGB entries
 	output [1:0] CRES,	// colour resolution = bits per pixel
 	output [2:0] LPR,		// lines per row
 	output [1:0] LPF,		// lines per field
@@ -257,8 +257,6 @@ module vsamx(
 //	-- bits, allowing a base address anywhere in the 512K in multiples of
 //	-- 32 bytes.
 	wire [18:3] F;
-	
-	wire VC;
 	
 	wire MMU_EN;
 
@@ -376,7 +374,7 @@ module vsamx(
 		.Q(Q_i),
 		.V(V),
 		.F(F),
-		.VC(VC),
+		.VC(VC_EN),
 		.MMU_EN(MMU_EN),
 		.R(R),
 		.TY(TY),
@@ -395,8 +393,8 @@ module vsamx(
 		.FMT(FMT),
 		.BP(BP),
 		.BPI(BPI),
-		.page(mpu_page)//,
-		//.PDEF(PDEF)
+		.page(mpu_page),
+		.PDEF(PDEF)
 	);
 	
 //	-- Latching register writes on the falling edge of Q makes other timing a lot simpler.  In particular, when to open the CPU data gate.

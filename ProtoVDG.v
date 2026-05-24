@@ -8,7 +8,7 @@ module ProtoVDG(
 	Format,
 	GM,
 	Inv,
-	//PaletteDef,
+	PaletteDef,
 	AlphaRow,
 	AlphaCode,
 	DA0,
@@ -35,7 +35,7 @@ module ProtoVDG(
 	input Format;
 	input [2:0] GM;
 	input Inv;
-	//input [127:0] PaletteDef;
+	input [127:0] PaletteDef;
 	input VC_EN;
 	input [1:0] CRES;
 	input [1:0] LPF;
@@ -66,6 +66,7 @@ module ProtoVDG(
 	wire [3:0] AlphaColour;
 	wire [3:0] SemiColour;
 	wire [3:0] BorderColour;
+	wire [3:0] EnhancedColour;
 	wire viewportActive;
 	wire blank;
 
@@ -93,7 +94,7 @@ module ProtoVDG(
 	assign useCSS = forceMode ? forceCSS : Css;
 	assign useAnS = useData[7]; //forceMode ? forceSG : useData[7];
 //	assign useInv = useData[6]; //forceMode ? forceInv : Inv;
-	assign useFormat = 1'b0; //forceMode ? forceFormat : Format;
+	assign useFormat = forceFormat; //forceMode ? forceFormat : Format;
 	assign useData = testcode; //forceMode ? forceData : Data;
 	
 	assign AlphaCode = useData[6:0];
@@ -203,6 +204,14 @@ module ProtoVDG(
                      .Load(Load),
                      .Pixel(GraphPixel[1:0])
 						);
+						
+	EnhancedRawShift EnhancedBitmapSf (
+							.Clk(PClk),
+							.Data(useData),
+							.Divider({VR, CRES}),
+							.Load(Load),
+							.Pixel(EnhancedColour)
+						);
 	// semigraphic data register
    SemiShift  		SemiSf (
 							.Clk(PClk), 
@@ -241,12 +250,13 @@ module ProtoVDG(
                      .Colour2(AlphaColour[3:0]), 
                      .Colour3(GraphColour[3:0]), 
 							.Colour4(BorderColour),
+							.Colour5(EnhancedColour),
                      .Sel1(Sel1), 
                      .Sel2(Sel2), 
 							.VC(VC_EN),
 							.backporch(blank),
 							.viewportActive(viewportActive),
-							//.PaletteDef(PaletteDef),
+							.PaletteDef(PaletteDef),
 							.Border(BRDR),
                      .RGB(RGB)
 						);
@@ -283,8 +293,8 @@ module ProtoVDG_testbench();
 	wire [11:0] RGB;
 	wire VR;
 	
-	parameter clockperiod = 69480;
-	parameter halfclock = 34740;
+	parameter clockperiod = 6948;
+	parameter halfclock = 3474;
 	
 	ProtoVDG uut (
 		.AnG (AnG),
@@ -322,23 +332,41 @@ module ProtoVDG_testbench();
 		Data <= 8'd65;
 		AlphaRowData <= 8'hFF;
 		Format <= 1'b1;
-		VideoLoadClock <= 1'b0;
+		VideoLoadClock <= 1'b1;
+		VC_EN <= 1'b1;
 	end
 	
 	// video pixel clock generator
 	always begin
 		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk; VideoLoadClock <= 1'b0;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk;
+		#(halfclock) Clk = ~Clk; VideoLoadClock <= 1'b1;		
 	end
-
-	integer VLCdivider;
-	// videoLoadClock
-	always begin
-		for (VLCdivider = 0; VLCdivider < 12; VLCdivider = VLCdivider + 1)
-			#(clockperiod);
-		VideoLoadClock <= 1'b0;
-		for (VLCdivider = 0; VLCdivider < 4; VLCdivider = VLCdivider + 1)
-			#(clockperiod);
-		VideoLoadClock <= 1'b1;
-	end
-	
 endmodule

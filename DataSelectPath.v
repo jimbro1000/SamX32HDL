@@ -29,5 +29,5 @@ module DataSelectPath(
 
 	assign Divider = AnG && (GM[0] == 1'b0) ? 1'b1 : 1'b0;
 	assign selSemi = !AnG && AnS && !(AnG && GM) ? 1'b1 : 1'b0;
-	assign selAlpha = !AnG && !AnS || (AnG && GM == 3'b001) ? 1'b1 : 1'b0;
+	assign selAlpha = (AnG == 1'b0) && (AnS == 1'b0) || (AnG == 1'b1 && GM == 3'b001) ? 1'b1 : 1'b0;
 endmodule
