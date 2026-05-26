@@ -311,7 +311,7 @@ module vsamx(
 //	-- -- VDG
 
 //	-- Video address counter
-	wire [18:1] B;
+	wire [20:1] B;
 	wire [15:0] Y;
 	wire [6:0] X;
 	wire [6:0] VRES;
@@ -508,7 +508,11 @@ module vsamx(
 		.IER_or_VP(IER_or_VP),
 		.V(V),
 		.F(F),
+		.VC(VC_EN),
+		.HO(X),
+		.VO(Y),
+		.LPR(LPR),
 		.B(B)
 	);
 	
-	endmodule
+endmodule
