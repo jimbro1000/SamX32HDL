@@ -92,10 +92,10 @@ module ProtoVDG(
 	assign useAlpha = forceMode ? forceAlpha : AnG;
 	assign useGM = forceMode ? forceGM : GM;
 	assign useCSS = forceMode ? forceCSS : Css;
-	assign useAnS = useData[7]; //forceMode ? forceSG : useData[7];
+	assign useAnS = forceMode ? forceSG : useData[7];
 //	assign useInv = useData[6]; //forceMode ? forceInv : Inv;
 	assign useFormat = forceFormat; //forceMode ? forceFormat : Format;
-	assign useData = testcode; //forceMode ? forceData : Data;
+	assign useData = forceMode ? forceData : Data; //testcode; //
 	
 	assign AlphaCode = useData[6:0];
 	

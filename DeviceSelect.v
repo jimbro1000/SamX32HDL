@@ -13,14 +13,17 @@ module DeviceSelect(
 	wire is_ROM0;
 	wire is_ROM1;
 	wire is_ROM2;
-	wire is_SAM;
+//	wire is_SAM;
 	wire is_IRQ;
+	wire is_COMMON0;
+	wire is_COMMON1;
+	wire is_COMMON;
 	
 	assign is_FFxx = A[15:8] == 8'd255;
 	assign is_IO0 = (is_FFxx & A[7:5] == 3'b000);
 	assign is_IO1 = (is_FFxx & A[7:4] == 4'b0010);
 	assign is_IO2 = (is_FFxx & A[7:5] == 3'b010);
-	assign is_SAM = (is_FFxx & A[7:5] == 3'b110);
+//	assign is_SAM = (is_FFxx & A[7:5] == 3'b110);
 	assign is_IRQ = (is_FFxx & A[7:4] == 4'b1111);
 	assign is_COMMON0 = (COMMON[0] == 1'b1 & A[15:12] == 4'b1111);
 	assign is_COMMON1 = (COMMON[1] == 1'b1 & A[15:12] == 4'b1110);
@@ -40,7 +43,7 @@ module DeviceSelect(
 			S <= 3'b000;
 		else if (is_IRQ)
 			S <= 3'b010;
-		else if (is_FFxx)
+		else if (is_FFxx) //is_SAM
 			S <= 3'b111;
 		else if (is_ROM0)
 			S <= 3'b001;

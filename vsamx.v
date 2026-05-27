@@ -200,7 +200,7 @@ module vsamx(
 	input [7:0] D,
 	input RnW,
 
-	output reg [7:0] VD,
+	output reg [7:0] VD, // latched video data
 	output [2:0] S,
 	output [20:0] Z, 		// SAM address
 	output nZ0,  			// inverted Z0
@@ -323,6 +323,10 @@ module vsamx(
 //	-- Counters, dividers
 
 	wire is_DMA;
+	wire is_FFxx;
+	wire is_IRQ;
+	wire is_COMMON;
+	wire is_RAM;
 
 	wire use_xdiv3;
 	wire use_xdiv2;
@@ -345,7 +349,7 @@ module vsamx(
 
 //	-- IO, SAM registers, IRQ vectors
 	assign is_FFxx = A[15:8] == 8'b11111111;
-	assign is_IRQ = is_FFxx & A[7:4] == 3'b1111;
+	assign is_IRQ = is_FFxx & (A[7:4] == 4'b1111);
 	assign is_COMMON = (((COMMON[0] == 1'b1 & A[15:12] == 4'b1111) | (COMMON[1] == 1'b1 & A[15:12] == 4'b1110)) & (is_IRQ | ~is_FFxx));
 
 //	-- RAM
@@ -512,6 +516,7 @@ module vsamx(
 		.HO(X),
 		.VO(Y),
 		.LPR(LPR),
+		.HVEN(HVEN),
 		.B(B)
 	);
 	

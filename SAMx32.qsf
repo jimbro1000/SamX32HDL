@@ -183,5 +183,4 @@ set_location_assignment PIN_104 -to CS[0]
 set_location_assignment PIN_101 -to CS[2]
 set_location_assignment PIN_97 -to CS[3]
 set_global_assignment -name VERILOG_FILE Palette6847.v
-set_global_assignment -name VERILOG_FILE output_files/EnhancedRawShift.v
 set_global_assignment -name VERILOG_FILE EnhancedRawShift.v

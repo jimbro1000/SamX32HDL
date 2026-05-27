@@ -30,7 +30,7 @@ module SamRegisters(
 	output reg [127:0] PDEF
 );
 
-	wire is_FFxx;
+//	wire is_FFxx;
 	wire is_FF3x;
 	wire is_FF9x;
 	wire is_FFAx;
@@ -43,7 +43,7 @@ module SamRegisters(
 	reg [7:0] HOR;
 	reg [7:0] page_map_array [0:15];
 	
-	assign is_FFxx    = (A[15:8] == 8'd255) ? 1'b1 : 1'b0;
+//	assign is_FFxx    = (A[15:8] == 8'd255) ? 1'b1 : 1'b0;
 	assign is_FF3x    = (A[15:4] == 12'b111111110011) ? 1'b1 : 1'b0; // FF3x ONLY
 	assign is_FF9x    = (A[15:4] == 12'b111111111001) ? 1'b1 : 1'b0; // FF9x ONLY
 	assign is_FFAx    = (A[15:4] == 12'b111111111010) ? 1'b1 : 1'b0; // FFAx ONLY
@@ -63,9 +63,9 @@ module SamRegisters(
 	assign X = HOR[6:0];
 	
 	initial begin
-		INIT0 <= 8'b01000000; //8'b11000000;
-		VMODE <= 8'b10001000; 
-		VRES <= 7'b0110110; //[2]LPF[3]HRES[2]CRES
+		INIT0 <= 8'b11000000; //8'b11000000;
+		VMODE <= 8'b00001000; //BP na BPI MOCH H50 LPR[2] LPR[1] LPR[0]
+		VRES <= 7'b0000000; //[2]LPF[3]HRES[2]CRES
 		HOR <= 8'b00000000;
 		BRDR <= 8'b000001001; //R0 G0 R2 G2 B2 R1 G1 B1 (yes it is weird but the only way to be compatible with CoCo3)
 		PDEF <= 128'b00111000000010000001000000100000001111110000100100010010001001001111111101011011101011011111011000001001010100101010010000000000;
@@ -104,7 +104,7 @@ module SamRegisters(
 	
 	always @(negedge Q) begin
 		if (RSTn == 1'b0) begin
-			V <= 8'd0;
+			V <= 3'd0;
 			F <= 14'd0;
 			TASK <= 1'b0;
 			R <= 1'b0;
