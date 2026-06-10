@@ -200,7 +200,7 @@ module vsamx(
 	input [7:0] D,
 	input RnW,
 
-	output reg [7:0] VD, // latched video data
+	output [7:0] VD, // latched video data
 	output [2:0] S,
 	output [20:0] Z, 		// SAM address
 	output nZ0,  			// inverted Z0
@@ -453,12 +453,19 @@ module vsamx(
 		.nCE(nCE)
 	);
 	
+	VideoMemoryBuffer videoBuffer(
+		.load(VideoLoadClock),
+		.read(1'b1),
+		.readData(D),
+		.data(VD)
+	);
+	
 //	-- differentiate video data from cpu data
 //	-- latch on each cycle where z addressing is dedicated to VDG
-	always @(BOSC) begin
-		if (z_video)
-			VD <= D;
-	end
+//	always @(BOSC) begin
+//		if (z_video)
+//			VD <= D;
+//	end
 
 //	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 //	-- -- Address multiplexer
