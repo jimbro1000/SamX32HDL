@@ -86,7 +86,19 @@ module FormatTiming(
 	initial begin
 		vBlank <= 1'b1;
 		hBlank <= 1'b1;
+		u_da0 <= 1'b1;
+		DA0 <= 1'b1;
+		colCounter <= 11'd0;
+		lineCounter <= 9'd0;
+		Clk2 <= 1'b0;
+//		Clk3 <= 1'b0;
+		alphaRowCounter <= 4'b0;
+		daCount <= 7'd0;
+		HSn <= 1'b0;
+		FSn <= 1'b0;
+		daResetLimit <= 7'd16;
 	end
+
 
 	always @(negedge Clk) begin
 		if (colCounter == allcols) begin 														// end of horizontal line
@@ -148,7 +160,7 @@ module FormatTiming(
 				u_da0 <= 1'b0;
 		end
 		// trigger data load on 16 cycle boundary for hires and 32 cycle boundary for medium res
-		Load = slowMode == 1'b1 ? colCounter[4:0] == 5'd0 : colCounter[3:0] == 4'd0;
+		Load <= slowMode == 1'b1 ? colCounter[4:0] == 5'd0 : colCounter[3:0] == 4'd0;
 	end
 	
 //	reg Clk3;
@@ -170,104 +182,7 @@ module FormatTiming(
 	assign leftpreload = LeftBorderMargin - preloadOffset;
 	assign rightpreload = RightBorderMargin - preloadOffset;
 
-//	always @(CRES) begin // very speculatively split into logic on bits per pixel but likely unnecessary...
-//		if (VC_EN == 1'b0 && CRES == 2'd0) begin
-//			case (HRES)
-//				3'b101 : begin
-//					preloadOffset <= 5'd8; // 640 x 1 pixels wide
-//					daResetLimit <= 8'd8;
-//				end
-//				3'b100 : begin
-//					preloadOffset <= 5'd8; // 512 x 1 pixels wide
-//					daResetLimit <= 8'd8;
-//				end
-//				3'b011 : begin
-//					preloadOffset <= 5'd16; // 320 x 1 pixels wide
-//					daResetLimit <= 8'd16;
-//				end
-//				default: begin
-//					preloadOffset <= 5'd16; // 256 x 1 pixels wide
-//					daResetLimit <= 8'd16;
-//				end
-//			endcase
-//		end else if (CRES == 2'd1) begin
-//			case (HRES)
-//				3'b101 : begin
-//					preloadOffset <= 5'd8; // 320 x 1 pixels wide
-//					daResetLimit <= 8'd16;
-//				end
-//				3'b100 : begin
-//					preloadOffset <= 5'd8; // 256 x 1 pixels wide
-//					daResetLimit <= 8'd16;
-//				end
-//				3'b011 : begin
-//					preloadOffset <= 5'd16; // 160 x 2 pixels wide
-//					daResetLimit <= 8'd32;
-//				end
-//				default: begin
-//					preloadOffset <= 5'd16; // 128 x 2 pixels wide
-//					daResetLimit <= 8'd32;
-//				end
-//			endcase
-//		end else if (CRES == 2'd2) begin
-//			case (HRES)
-//				3'b101 : begin
-//					preloadOffset <= 5'd8; // 160 x 2 pixels wide
-//					daResetLimit <= 8'd32;
-//				end
-//				3'b100 : begin
-//					preloadOffset <= 5'd8; // 128 x 2 pixels wide
-//					daResetLimit <= 8'd32;
-//				end
-//				3'b011 : begin
-//					preloadOffset <= 5'd16; // 80 x 4 pixels wide
-//					daResetLimit <= 8'd64;
-//				end
-//				default: begin
-//					preloadOffset <= 5'd16; // 64 x 4 pixels wide
-//					daResetLimit <= 8'd64;
-//				end
-//			endcase
-//		end else begin // 8BPP
-//			case (HRES)
-//				3'b111 : begin
-//					preloadOffset <= 5'd1; // actually 256 byte width
-//					daResetLimit <= 8'd1;
-//				end
-//				3'b101 : begin
-//					preloadOffset <= 5'd8; // 40 x 8 pixels wide
-//					daResetLimit <= 8'd64;
-//				end
-//				3'b011 : begin
-//					preloadOffset <= 5'd8; // 32 x 8 pixels wide
-//					daResetLimit <= 8'd64;
-//				end
-////				7'd40 : begin
-////					preloadOffset <= 5'd16; // 20 x 16 pixels wide
-////					daResetLimit <= 8'd128;
-////				end
-//				default: begin
-//					preloadOffset <= 5'd16; // 16 x 16 pixels wide
-//					daResetLimit <= 8'd128;
-//				end
-//			endcase
-//		end
-//	end
 	
-	initial begin
-	   u_da0 <= 1'b1;
-		DA0 <= 1'b1;
-		colCounter <= 11'd0;
-		lineCounter <= 9'd0;
-		Clk2 <= 1'b0;
-//		Clk3 <= 1'b0;
-		alphaRowCounter <= 4'b0;
-		daCount <= 7'd0;
-		HSn <= 1'b0;
-		FSn <= 1'b0;
-		daResetLimit <= 7'd16;
-	end
-
 	// vertical sync active low
 	// assign FSn = ~(lineCounter[8:2] == 6'd0); 
 	// 8 lines of vsync according to spec - 6847 produces nearer 40 lines...use 32 need to fix this for NTSC if I start at 16 instead of 0

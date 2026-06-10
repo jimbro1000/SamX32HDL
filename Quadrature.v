@@ -139,7 +139,7 @@ always @(negedge OSC) begin
 			NextState <= 4'd8;
 			if (fast_cpu_cycle == 1'b1)
 				if (R == 1'b0)
-					fast_cpu_cycle = 1'b0;
+					fast_cpu_cycle <= 1'b0;
 				else
 					Q <= Reset;
 		end

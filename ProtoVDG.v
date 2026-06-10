@@ -51,6 +51,17 @@ module ProtoVDG(
 	output OutputFormat;
 	output [11:0] RGB;
 	output VR;
+	
+//	wire [7:0] AlphaRowData;
+//	wire [3:0] AlphaRow;
+//	wire [7:0] AlphaCode;
+	
+//	CharRom0 CharGen (
+//		.clk(Clk),
+//		.address(AlphaCode),
+//		.row(AlphaRow),
+//		.data(AlphaRowData)
+//	);
 
 	wire Divider;
 	wire Load;
@@ -94,10 +105,10 @@ module ProtoVDG(
 	assign useCSS = forceMode ? forceCSS : Css;
 	assign useAnS = forceMode ? forceSG : useData[7];
 //	assign useInv = useData[6]; //forceMode ? forceInv : Inv;
-	assign useFormat = forceFormat; //forceMode ? forceFormat : Format;
+	assign useFormat = forceMode ? forceFormat : Format;
 	assign useData = forceMode ? forceData : Data; //testcode; //
 	
-	assign AlphaCode = useData[6:0];
+	assign AlphaCode = useData;
 	
 	reg [3:0] frmCount;
 	

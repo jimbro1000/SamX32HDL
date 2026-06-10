@@ -69,6 +69,25 @@ module SamRegisters(
 		HOR <= 8'b00000000;
 		BRDR <= 8'b000001001; //R0 G0 R2 G2 B2 R1 G1 B1 (yes it is weird but the only way to be compatible with CoCo3)
 		PDEF <= 128'b00111000000010000001000000100000001111110000100100010010001001001111111101011011101011011111011000001001010100101010010000000000;
+		F <= 16'd0;
+		V <= 2'd0;
+		COMMON <= 2'd0;
+      page_map_array[0] <= 8'd0;
+      page_map_array[1] <= 8'd1;
+      page_map_array[2] <= 8'd2;
+      page_map_array[3] <= 8'd3;
+      page_map_array[4] <= 8'd4;
+      page_map_array[5] <= 8'd5;
+      page_map_array[6] <= 8'd6;
+      page_map_array[7] <= 8'd7;
+      page_map_array[8] <= 8'd0;
+      page_map_array[9] <= 8'd1;
+      page_map_array[10] <= 8'd2;
+      page_map_array[11] <= 8'd3;
+      page_map_array[12] <= 8'd4;
+      page_map_array[13] <= 8'd5;
+      page_map_array[14] <= 8'd6;
+      page_map_array[15] <= 8'd7;
 	end
 	
 	always @(negedge clk) begin

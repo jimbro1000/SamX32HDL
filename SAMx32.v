@@ -1,30 +1,31 @@
 `timescale 1ps / 1ps
 
 module SAMx32(
-	input [15:0] A,
-	input RWn,
-	input OSCin,
-	input RSTn,
-	input [2:0] GM,
-	input CSS,
-	input AnG,
-	input [7:0] CD,
-	input [7:0] RD,
-	output [11:0] RGBout,
-	output Format,
-	output [19:0] Z,
-	output Z0n,
-	output CE1n,
-	output CE2n,
-	output WEn,
-	output [2:0] S,
-	output Q,
-	output E,
-	output [6:0] CC,
-	output [3:0] CR,
-	output reg [3:0] CS,
-	output HSn,
-	output FSn
+	input [15:0] A, 		// CPU 16-bit address bus
+	input RWn,				// Read / Write signal
+	input OSCin,			// Main clock
+	input RSTn,				// Reset
+	input [2:0] GM,		// Graphic mode
+	input CSS,				// Colour set select
+	input AnG,				// Alpha / Graphic mode
+	input [7:0] RD,		// CPU 8-bit data bus
+	input [7:0] CD,		// Character data 8-bit
+	output [11:0] RGBout,// Video output R[4]G[4]B[4]
+	output VCLK,			// Video pixel clock
+	output Format,			// Video frame timing PAL/NTSC
+	output [3:0] CR,		// Character row
+	output reg [3:0] CS,	// Character set select
+	output [6:0] CC,		// Character code
+	output [19:0] Z,		// Expanded RAM address bus
+	output Z0n,				// Inverted bit 0 of expanded RAM address bus
+	output CE1n,			// RAM chip enable 1
+	output CE2n,			// RAM chip enable 2
+	output WEn,				// RAM write enable
+	output [2:0] S,		// SAM device select
+	output Q,				// Quadrature clock Q
+	output E,				// Quadrature clock E
+	output HSn,				// Horizontal video sync
+	output FSn				// Vertical video sync
 );
 
 	wire [20:0] ZI;   // SRAM address bus (internal)
