@@ -30,12 +30,15 @@ module SamRegisters(
 	output reg [127:0] PDEF
 );
 
-//	wire is_FFxx;
 	wire is_FF3x;
 	wire is_FF9x;
 	wire is_FFAx;
 	wire is_FFBx;
 	wire is_SAM_REG;
+	wire is_Sprite_Page;
+	wire is_Tile_Page;
+	wire [5:0] identity;
+	wire [4:0] index;
 	
 	reg [7:0] INIT0;
 	reg [7:0] VMODE;
@@ -43,12 +46,16 @@ module SamRegisters(
 	reg [7:0] HOR;
 	reg [7:0] page_map_array [0:15];
 	
-//	assign is_FFxx    = (A[15:8] == 8'd255) ? 1'b1 : 1'b0;
+	// sprite is 8x8 array of 4 bit values 
+	
 	assign is_FF3x    = (A[15:4] == 12'b111111110011) ? 1'b1 : 1'b0; // FF3x ONLY
 	assign is_FF9x    = (A[15:4] == 12'b111111111001) ? 1'b1 : 1'b0; // FF9x ONLY
 	assign is_FFAx    = (A[15:4] == 12'b111111111010) ? 1'b1 : 1'b0; // FFAx ONLY
 	assign is_FFBx    = (A[15:4] == 12'b111111111011) ? 1'b1 : 1'b0; // FFBx ONLY
 	assign is_SAM_REG = (A[15:5] == 11'b11111111110) ? 1'b1 : 1'b0;  // FFCx and FFDx
+	assign is_Sprite_Page = (page == 8'b11111110); 						  // penultimate video page at top of memory
+	assign is_Tile_Page = (page == 8'b11111111); 						  // ultimate video page at top of memory
+	assign identity = A[10:5];
 	
 	assign FMT = ~H50;
 	assign BP = VMODE[7];
@@ -237,6 +244,8 @@ module SamRegisters(
 //						default: ;
 					endcase
 				end
+			end else if (is_Sprite_Page) begin
+			end else if (is_Tile_Page) begin
 			end
 		end
 	end

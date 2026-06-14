@@ -272,3 +272,5 @@ set_location_assignment PIN_76 -to CD[7]
 set_location_assignment PIN_75 -to CD[5]
 set_location_assignment PIN_74 -to CD[6]
 set_global_assignment -name VERILOG_FILE VideoMemoryBuffer.v
+set_global_assignment -name VERILOG_FILE SpriteCountDivider.v
+set_global_assignment -name VERILOG_FILE SpriteRenderer.v
