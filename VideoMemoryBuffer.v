@@ -14,14 +14,14 @@ module VideoMemoryBuffer(
 		buffer[2] <= 7'd0;
 		buffer[3] <= 7'd0;
 		pointer <= 3'd0;
-		data <= 7'd255;
+		data <= 8'd255;
 	end
 
 	always @(negedge read or negedge load) begin
 		if (load == 1'b0) begin
 			if (pointer != 3) begin
 				buffer[pointer] <= readData;
-				pointer <= pointer + 1;
+				pointer <= pointer + 3'd1;
 			end
 		end
 		if (read == 1'b0) begin
@@ -30,7 +30,7 @@ module VideoMemoryBuffer(
 			buffer[1] <= buffer[2];
 			buffer[2] <= buffer[3];
 			if (pointer != 0)
-				pointer <= pointer - 1;
+				pointer <= pointer - 3'd1;
 		end
 	end
 

@@ -39,7 +39,9 @@ module FormatTiming(
 	output reg active,
 	output reg Load,
 	output [3:0] alphaRow,
-	output reg DA0
+	output reg DA0,
+	output [10:0] px,
+	output [8:0] py
    );
 	
 	reg activeRow;
@@ -196,5 +198,8 @@ module FormatTiming(
 	assign PixelClk = slowMode ? Clk2 : Clk;
 	assign frameTopRow = TopMargin; //FrameFormat ? toprow2 : toprow; // FrameFormat 0=PAL/1=NTSC
 	assign frameBottomRow = BottomMargin; //FrameFormat ? bottomrow2 : bottomrow;
+	
+	assign px = colCounter;
+	assign py = lineCounter;
 
 endmodule

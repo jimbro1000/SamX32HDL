@@ -23,7 +23,7 @@ module SpriteRenderer(
 	wire xySwitch;
 	wire downX;
 	wire downY;
-	wire [3:0] bit;
+	wire [3:0] pixelbits;
 	wire clkX;
 	wire clkY;
 	integer index;
@@ -103,9 +103,9 @@ module SpriteRenderer(
 		index = countX * 4 + countY * 32;
 	end
 	
-	assign bit = bitmap[index +: 4];
-	assign pixel = bit[2:0];
-	assign mask = active & bit[3];
+	assign pixelbits = bitmap[index +: 4];
+	assign pixel = pixelbits[2:0];
+	assign mask = active & pixelbits[3];
 
 endmodule
 

@@ -11,7 +11,7 @@ module SAMx32(
 	input [7:0] RD,		// CPU 8-bit data bus
 	input [7:0] CD,		// Character data 8-bit
 	output [11:0] RGBout,// Video output R[4]G[4]B[4]
-	output VCLK,			// Video pixel clock
+	output VClk,			// Video pixel clock
 	output Format,			// Video frame timing PAL/NTSC
 	output [3:0] CR,		// Character row
 	output reg [3:0] CS,	// Character set select
@@ -33,7 +33,6 @@ module SAMx32(
 	wire RAMCEn;	   // SRAM chip enable
 	wire GEn;
 	wire GDIR;
-	wire VClk;			// Video clock
 	wire DA0;			// Video data access read
 	wire RFormat;     // Requested video format (redundant?)
 //	wire AnG;         // Alpha/Graphic mode select
@@ -51,6 +50,8 @@ module SAMx32(
 	wire VLC;	      // video load clock
 	
 	wire [7:0] VD;     // Video data buffer
+	wire [2047:0] sprite_bitmaps;
+	wire [1023:0] sprite_instance;
 	
 //	ControlSignalCapture shadowPIA (
 //		.Clk (E),
@@ -100,7 +101,9 @@ module SAMx32(
 		.HRES (HRES),
 		.BRDR (BRDR),
 		.VideoLoadClock (VLC),
-		.VR(VR)
+		.VR(VR),
+		.sprite_bitmaps(sprite_bitmaps),
+		.sprite_instance(sprite_instance)
 	);
 			  
 	assign CE1n = RAMCEn | ZI[20];

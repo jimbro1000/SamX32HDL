@@ -23,7 +23,9 @@ module ProtoVDG(
 	HRES,
 	BRDR,
 	VideoLoadClock,
-	VR
+	VR,
+	sprite_bitmaps,
+	sprite_instance
 );
 
 	input AnG;
@@ -43,6 +45,8 @@ module ProtoVDG(
 	input [2:0] HRES;
 	input [7:0] BRDR;
 	input VideoLoadClock;
+	input [2047:0] sprite_bitmaps;
+	input [1023:0] sprite_instance;
 	output [3:0] AlphaRow;
 	output [6:0] AlphaCode;
 	output DA0;
@@ -108,9 +112,11 @@ module ProtoVDG(
 	assign useFormat = forceMode ? forceFormat : Format;
 	assign useData = forceMode ? forceData : Data; //testcode; //
 	
-	assign AlphaCode = useData;
+	assign AlphaCode = useData[6:0];
 	
 	reg [3:0] frmCount;
+	
+	wire [11:0] bitmapRGB;
 	
 	initial begin
 		testcode <= 8'd112;
@@ -135,6 +141,11 @@ module ProtoVDG(
 	wire [8:0] RightMargin;
 	wire [8:0] TopMargin;
 	wire [8:0] BottomMargin;
+	
+	wire [10:0] px;
+	wire [8:0] py;
+	wire [11:0] spriteRGB;
+	wire spriteActive;
 					
 	FormatProfiler FmtProfile (
 							.clk(Clk),
@@ -173,7 +184,9 @@ module ProtoVDG(
 							.BackPorch(blank),
 							.active(viewportActive),
 							.Load(Load), 
-							.PixelClk(PClk)
+							.PixelClk(PClk),
+							.px(px),
+							.py(py)
 						);
 	// Multiplexer - pick pixel generator format, define timing divider, select lines for colour mux
 	DataSelectPath	DataSel (
@@ -269,7 +282,25 @@ module ProtoVDG(
 							.viewportActive(viewportActive),
 							.PaletteDef(PaletteDef),
 							.Border(BRDR),
-                     .RGB(RGB)
+                     .RGB(bitmapRGB)
+						);
+						
+	SpriteColourMux	VideoOut(
+							.bitmapRGB(bitmapRGB),
+							.spriteRGB(spriteRGB),
+							.spriteActive(spriteActive),
+							.outputRGB(RGB)
+						);
+						
+	SpriteMux			SpriteOut(
+							.clk(clk),
+							.HRn(HRn),
+							.px(px),
+							.py(py),
+							.bitmaps(sprite_bitmaps),
+							.instances(sprite_instance),
+							.RGB(spriteRGB),
+							.active(spriteActive)
 						);
 endmodule
 

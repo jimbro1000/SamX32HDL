@@ -27,7 +27,12 @@ module SamRegisters(
 	output BP,
 	output BPI,
 	output reg [7:0] page,
-	output reg [127:0] PDEF
+	output reg [127:0] PDEF,
+	// sprite is 8x8 array of 4 bit values - start with 8 bitmaps at 256 bits per sprite
+	output reg [2047:0] sprite_bitmaps,
+	// instance is 32 bytes of metadata - start with 4 instances at 256 bits per instance
+	output reg [1023:0] sprite_instance
+	
 );
 
 	wire is_FF3x;
@@ -35,10 +40,11 @@ module SamRegisters(
 	wire is_FFAx;
 	wire is_FFBx;
 	wire is_SAM_REG;
-	wire is_Sprite_Page;
-	wire is_Tile_Page;
-	wire [5:0] identity;
-	wire [4:0] index;
+	wire is_Sprite_Page;	// mapped address page for sprites
+	wire is_Tile_Page;	// mapped address page for tiles
+	wire is_Sprite_Bitmap;		// sprite bitmap half of mapped page
+	wire [13:0] bitmap_pointer;		// composed pointer to "byte" in bitmap array
+	wire [12:0] instance_pointer;	// composed pointer to "byte" in instance array
 	
 	reg [7:0] INIT0;
 	reg [7:0] VMODE;
@@ -46,7 +52,6 @@ module SamRegisters(
 	reg [7:0] HOR;
 	reg [7:0] page_map_array [0:15];
 	
-	// sprite is 8x8 array of 4 bit values 
 	
 	assign is_FF3x    = (A[15:4] == 12'b111111110011) ? 1'b1 : 1'b0; // FF3x ONLY
 	assign is_FF9x    = (A[15:4] == 12'b111111111001) ? 1'b1 : 1'b0; // FF9x ONLY
@@ -55,7 +60,9 @@ module SamRegisters(
 	assign is_SAM_REG = (A[15:5] == 11'b11111111110) ? 1'b1 : 1'b0;  // FFCx and FFDx
 	assign is_Sprite_Page = (page == 8'b11111110); 						  // penultimate video page at top of memory
 	assign is_Tile_Page = (page == 8'b11111111); 						  // ultimate video page at top of memory
-	assign identity = A[10:5];
+	assign is_Sprite_Bitmap = A[11] == 1'b0;
+	assign bitmap_pointer = { A[10:0], 3'd0 };
+	assign instance_pointer = { A[9:0], 3'd0 };
 	
 	assign FMT = ~H50;
 	assign BP = VMODE[7];
@@ -95,6 +102,8 @@ module SamRegisters(
       page_map_array[13] <= 8'd5;
       page_map_array[14] <= 8'd6;
       page_map_array[15] <= 8'd7;
+		sprite_bitmaps = 2048'd0;
+		sprite_instance = 1024'd0;
 	end
 	
 	always @(negedge clk) begin
@@ -245,6 +254,11 @@ module SamRegisters(
 					endcase
 				end
 			end else if (is_Sprite_Page) begin
+				if (is_Sprite_Bitmap) begin
+					sprite_bitmaps[bitmap_pointer+:8] <= D;
+				end else begin // instance
+					sprite_instance[instance_pointer+:8] <= D;
+				end
 			end else if (is_Tile_Page) begin
 			end
 		end

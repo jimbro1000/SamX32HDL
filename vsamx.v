@@ -230,7 +230,11 @@ module vsamx(
 	output [2:0] HRES,	// horizontal resolution
 	output [7:0] BRDR,	// border colour
 	output VideoLoadClock,
-	input VR					// video speed rate (0=std, 1=fast)
+	input VR,				// video speed rate (0=std, 1=fast)
+
+// sprites
+	output [2047:0] sprite_bitmaps,
+	output [1023:0] sprite_instance
 );
 
 //	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -398,7 +402,9 @@ module vsamx(
 		.BP(BP),
 		.BPI(BPI),
 		.page(mpu_page),
-		.PDEF(PDEF)
+		.PDEF(PDEF),
+		.sprite_bitmaps(sprite_bitmaps),
+		.sprite_instance(sprite_instance)
 	);
 	
 //	-- Latching register writes on the falling edge of Q makes other timing a lot simpler.  In particular, when to open the CPU data gate.

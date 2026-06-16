@@ -14,6 +14,11 @@ module SpriteCollisionGrapher(
 	output reg [7:0] outGraphD
 );
 
+	// object structure
+	// [7:5] = id
+	// [4:1] = hitgroup 3..0
+	// [0] = active pixel
+
 	wire[2:0] idA;
 	wire[2:0] idB;
 	wire[2:0] idC;
