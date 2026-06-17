@@ -13,7 +13,7 @@ module SpriteMux(
 	wire startAY;
 	wire enableA;
 	wire maskA;
-	wire [2:0] pixelA;
+	wire [11:0] pixelA;
 	
 	wire [10:0] posAX;
 	wire [8:0] posAY;
@@ -62,6 +62,7 @@ module SpriteMux(
 		.mirrorY(mirrorAY),
 		.startX(startAX),
 		.startY(startAY),
+		.palette(paletteA),
 		.mask(maskA),
 		.pixel(pixelA)
 	);
@@ -70,7 +71,7 @@ module SpriteMux(
 	wire startBY;
 	wire enableB;
 	wire maskB;
-	wire [2:0] pixelB;
+	wire [11:0] pixelB;
 	
 	wire [10:0] posBX;
 	wire [8:0] posBY;
@@ -83,7 +84,7 @@ module SpriteMux(
 	wire [95:0] paletteB;
 	wire [1:0] priorityB;
 	
-	assign posBX = instances[274:263];		// 11 bits
+	assign posBX = instances[273:263];		// 11 bits
 	assign posBY = instances[282:274];		// 9 bits
 	assign mirrorBX = instances[284];
 	assign mirrorBY = instances[285];
@@ -118,6 +119,7 @@ module SpriteMux(
 		.mirrorY(mirrorBY),
 		.startX(startBX),
 		.startY(startBY),
+		.palette(paletteB),
 		.mask(maskB),
 		.pixel(pixelB)
 	);
@@ -126,7 +128,7 @@ module SpriteMux(
 	wire startCY;
 	wire enableC;
 	wire maskC;
-	wire [2:0] pixelC;
+	wire [11:0] pixelC;
 	
 	wire [10:0] posCX;
 	wire [8:0] posCY;
@@ -174,6 +176,7 @@ module SpriteMux(
 		.mirrorY(mirrorCY),
 		.startX(startCX),
 		.startY(startCY),
+		.palette(paletteC),
 		.mask(maskC),
 		.pixel(pixelC)
 	);
@@ -182,7 +185,7 @@ module SpriteMux(
 	wire startDY;
 	wire enableD;
 	wire maskD;
-	wire [2:0] pixelD;
+	wire [11:0] pixelD;
 	
 	wire [10:0] posDX;
 	wire [8:0] posDY;
@@ -230,6 +233,7 @@ module SpriteMux(
 		.mirrorY(mirrorDY),
 		.startX(startDX),
 		.startY(startDY),
+		.palette(paletteD),
 		.mask(maskD),
 		.pixel(pixelD)
 	);
@@ -243,5 +247,40 @@ module SpriteMux(
 	
 	assign active = maskA | maskB | maskC | maskD;
 	
+	// handle priority
+	// - requires a filter:
+	// - - test priority 3 A->D. First active pixel wins
+	//   - test priority 2 A->D. 
+	//   - test priotiry 1 A->D.
+	//   - test priority 0 A->D
+	// - the result can only be set once
+	// - result is indeterminate if no pixels are active
+	
+	SpritePriorityMux priorityMux(
+		.rgbA(pixelA),
+		.rgbB(pixelB),
+		.rgbC(pixelC),
+		.rgbD(pixelD),
+		.priorityA(priorityA),
+		.priorityB(priorityB),
+		.priorityC(priorityC),
+		.priorityD(priorityD),
+		.maskA(maskA),
+		.maskB(maskB),
+		.maskC(maskC),
+		.maskD(maskD),
+		.rgbOut(RGB)
+	);
+	
+	// handle collisions
+	// - this is going to get ugly, the hitgraph input is immutable.
+	// - the developing hitgraph needs to be fed back to sam registers 
+	// - in order for any changes to be retained, *but* the register
+	// - mechanism only accepts "writes" from the CPU. Given the hitgraph
+	// - is read only it would make sense to keep the hitgraph in a 
+	// - separate block of memory and inject the results on read
+	// - right now it is a moot point as the registers are all write only
+	// - a read mechanism is totally absent from sam registers and the
+	// - project in general
 
 endmodule

@@ -10,9 +10,10 @@ module SpriteRenderer(
 	input mirrorY,
 	input startX,
 	input startY,
+	input [95:0] palette,
 	
 	output mask,
-	output [2:0] pixel
+	output reg [11:0] pixel
 );
 
 	reg [2:0] countX;
@@ -48,23 +49,23 @@ module SpriteRenderer(
 	);
 	
 	assign downX = ~(
-		(!scaleX & !scaleY & rotate[1] & !rotate[0]) |
-		(!scaleX & scaleY & rotate[1] & !rotate[0]) |
-		(scaleX & !scaleY & !rotate[1]) |
-		(scaleX & !scaleY & rotate[1] & rotate[0]) |
-		(scaleX & scaleY & !rotate[1]) |
-		(scaleX & scaleY & rotate[1] & rotate[0])
+		(!scaleX && !scaleY && rotate[1] && !rotate[0]) |
+		(!scaleX && scaleY && rotate[1] && !rotate[0]) |
+		(scaleX && !scaleY && !rotate[1]) |
+		(scaleX && !scaleY && rotate[1] && rotate[0]) |
+		(scaleX && scaleY && !rotate[1]) |
+		(scaleX && scaleY && rotate[1] && rotate[0])
 	);
 	
 	assign downY = ~(
-		(!scaleX & !scaleY & !rotate[1] & rotate[0]) |
-		(!scaleX & !scaleY & rotate[1] & !rotate[0]) |
-		(!scaleX & scaleY & !rotate[1] & !rotate[0]) |
-		(!scaleX & scaleY & rotate[1] & rotate[0]) |
-		(scaleX & !scaleY & !rotate[1] & rotate[0]) |
-		(scaleX & !scaleY & rotate[1] & !rotate[0]) |
-		(scaleX & scaleY & !rotate[1] & !rotate[0]) |
-		(scaleX & scaleY & rotate[1] & rotate[0])
+		(!scaleX && !scaleY && !rotate[1] && rotate[0]) |
+		(!scaleX && !scaleY && rotate[1] && !rotate[0]) |
+		(!scaleX && scaleY && !rotate[1] && !rotate[0]) |
+		(!scaleX && scaleY && rotate[1] && rotate[0]) |
+		(scaleX && !scaleY && !rotate[1] && rotate[0]) |
+		(scaleX && !scaleY && rotate[1] && !rotate[0]) |
+		(scaleX && scaleY && !rotate[1] && !rotate[0]) |
+		(scaleX && scaleY && rotate[1] && rotate[0])
 	);
 	
 	assign xySwitch = rotate[0];
@@ -100,11 +101,11 @@ module SpriteRenderer(
 	end
 	
 	always @(clk) begin
-		index = countX * 4 + countY * 32;
+		index <= countX * 4 + countY * 32;
+		pixel <= palette[(pixelbits[2:0]*12) +: 12];
 	end
 	
 	assign pixelbits = bitmap[index +: 4];
-	assign pixel = pixelbits[2:0];
 	assign mask = active & pixelbits[3];
 
 endmodule
